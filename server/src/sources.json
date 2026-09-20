@@ -1,0 +1,47 @@
+[
+  {
+    "id": "bbc-top",
+    "name": "BBC Top Stories",
+    "type": "rss",
+    "url": "https://feeds.bbci.co.uk/news/rss.xml",
+    "category": "world",
+    "enabled": true,
+    "intervalMinutes": 15
+  },
+  {
+    "id": "bbc-tech",
+    "name": "BBC Technology",
+    "type": "rss",
+    "url": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+    "category": "technology",
+    "enabled": true,
+    "intervalMinutes": 15
+  },
+  {
+    "id": "guardian-world",
+    "name": "The Guardian World",
+    "type": "rss",
+    "url": "https://www.theguardian.com/world/rss",
+    "category": "world",
+    "enabled": true,
+    "intervalMinutes": 15
+  },
+  {
+    "id": "techcrunch",
+    "name": "TechCrunch",
+    "type": "rss",
+    "url": "https://techcrunch.com/feed/",
+    "category": "technology",
+    "enabled": true,
+    "intervalMinutes": 10
+  },
+  {
+    "id": "hn-front",
+    "name": "Hacker News Front Page",
+    "type": "rss",
+    "url": "https://hnrss.org/frontpage",
+    "category": "tech",
+    "enabled": true,
+    "intervalMinutes": 10
+  }
+]

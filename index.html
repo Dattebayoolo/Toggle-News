@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toggle News | 360° Ground News & Google UI Intelligence</title>
+  <meta name="description" content="Toggle News fuses Ground News media bias intelligence with Google UI and Material Design 3. Compare headlines, discover blindspots, and toggle perspectives using Google Sans typography." />
+  
+  <!-- Google Sans & Material Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.cdnfonts.com/css/google-sans" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- Topmost Warm Amber Alert Banner (Exact Ground News Reference) -->
+  <div class="gn-topmost-alert-banner">
+    <div class="topmost-banner-inner">
+      <span class="alert-banner-text">You're viewing top news stories across the world.</span>
+      <button class="alert-banner-btn" data-action="navigate-view" data-view="feed">Manage feed</button>
+    </div>
+  </div>
+
+  <!-- Ground News Faithful Header -->
+  <header class="gn-header">
+    <div class="gn-header-main">
+      <!-- Left: Logo + Top Nav Links -->
+      <div class="gn-header-left">
+        <div class="gn-brand" data-action="navigate-view" data-view="feed" title="Toggle News">
+          <svg class="gn-brand-icon" width="24" height="24" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="5" fill="#202124"/>
+            <rect x="5" y="6" width="3.2" height="16" rx="1.6" fill="#1A73E8"/>
+            <rect x="10.2" y="9" width="3.2" height="10" rx="1.6" fill="#EA4335"/>
+            <rect x="15.4" y="6.5" width="3.2" height="15" rx="1.6" fill="#FBBC04"/>
+            <rect x="20.6" y="11" width="3.2" height="6" rx="1.6" fill="#34A853"/>
+          </svg>
+          <span class="gn-header-wordmark">TOGGLE NEWS</span>
+        </div>
+
+        <nav class="gn-top-nav-links">
+          <button class="gn-top-link active" data-action="navigate-view" data-view="feed">
+            <span>For You</span>
+          </button>
+          <button class="gn-top-link" data-action="navigate-view" data-view="blindspots">
+            <span>Blindspot</span>
+            <span class="gn-badge-pill">Live</span>
+          </button>
+          <button class="gn-top-link" data-action="navigate-view" data-view="matrix">
+            <span>Compare</span>
+          </button>
+          <button class="gn-top-link" data-action="navigate-view" data-view="directory">
+            <span>Factuality</span>
+          </button>
+          <button class="gn-top-link" data-action="navigate-view" data-view="diet">
+            <span>My News Diet</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Right: Search + Controls + Subscribe + Log in + Flag -->
+      <div class="gn-header-right">
+        <div class="gn-search-box">
+          <svg class="search-mag-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="globalSearchInput" placeholder="Search..." autocomplete="off" aria-label="Search news" />
+          <button id="clearSearchBtn" class="google-clear-btn hidden" title="Clear" aria-label="Clear search">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Bookmarks -->
+        <button id="bookmarksNavBtn" class="gn-header-icon-btn" data-action="toggle-bookmarks-filter" title="Saved stories">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span id="bookmarksCounterBadge" class="google-counter-badge hidden">0</span>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button id="themeToggleBtn" class="gn-header-icon-btn" title="Toggle theme" aria-label="Toggle light/dark">
+          <svg id="themeIconDark" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg id="themeIconLight" class="hidden" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <!-- Subscribe Pill Button -->
+        <button class="gn-subscribe-pill-btn">Subscribe</button>
+
+        <!-- Log In -->
+        <button class="gn-login-text-btn">Log in</button>
+
+        <!-- Flag / Edition -->
+        <button class="gn-country-flag-btn" title="Edition: United States">🇺🇸</button>
+      </div>
+    </div>
+
+    <!-- Category Tabs Bar -->
+    <div id="categoryStrip" class="gn-category-tabs-bar">
+      <div class="gn-category-track" role="tablist" aria-label="News Categories">
+        <button class="gn-cat-tab active" data-category="All">Top Stories</button>
+        <button class="gn-cat-tab" data-category="Politics">US Politics</button>
+        <button class="gn-cat-tab" data-category="World">World</button>
+        <button class="gn-cat-tab" data-category="Economy">Business</button>
+        <button class="gn-cat-tab" data-category="Technology">Tech</button>
+        <button class="gn-cat-tab" data-category="Science">Science</button>
+        <button class="gn-cat-tab" data-category="Health">Health</button>
+        <button class="gn-cat-tab" data-category="Entertainment">Entertainment</button>
+        <button class="gn-cat-tab" data-category="Sports">Sports</button>
+        <button class="gn-cat-tab" data-category="Climate &amp; Energy">Climate</button>
+        <button class="gn-cat-tab" data-action="navigate-view" data-view="directory">Media Literacy</button>
+        <button class="gn-cat-tab" data-action="navigate-view" data-view="feed">All Topics</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main id="app-view" class="google-app-main-content">
+    <!-- Rendered dynamically by main.js -->
+  </main>
+
+  <!-- Modal Container for Story Dossier -->
+  <div id="modal-container" class="google-modal-root"></div>
+
+  <!-- Ground News Faithful Multi-Column Footer -->
+  <footer class="gn-master-footer">
+    <div class="gn-footer-inner">
+      <!-- Row 1: 5-Column Trending Topics -->
+      <div class="footer-trending-grid">
+        <div class="trending-col">
+          <h5 class="trending-col-heading">Topics</h5>
+          <ul class="trending-list">
+            <li><a href="#">World News</a></li>
+            <li><a href="#">US Politics</a></li>
+            <li><a href="#">Local News</a></li>
+            <li><a href="#">Entertainment</a></li>
+            <li><a href="#">Sports</a></li>
+            <li><a href="#">Business</a></li>
+            <li><a href="#">Tech</a></li>
+            <li><a href="#">Science</a></li>
+            <li><a href="#">Health</a></li>
+          </ul>
+        </div>
+
+        <div class="trending-col">
+          <h5 class="trending-col-heading">International editions</h5>
+          <ul class="trending-list">
+            <li><a href="#">United States</a></li>
+            <li><a href="#">United Kingdom</a></li>
+            <li><a href="#">Canada</a></li>
+            <li><a href="#">Australia</a></li>
+            <li><a href="#">World</a></li>
+            <li><a href="#">Middle East</a></li>
+            <li><a href="#">Asia</a></li>
+            <li><a href="#">Europe</a></li>
+            <li><a href="#">Latin America</a></li>
+          </ul>
+        </div>
+
+        <div class="trending-col">
+          <h5 class="trending-col-heading">Trending Internationally</h5>
+          <ul class="trending-list">
+            <li><a href="#">Israel-Gaza War</a></li>
+            <li><a href="#">Ukraine-Russia War</a></li>
+            <li><a href="#">Iran Nuclear Program</a></li>
+            <li><a href="#">China-Taiwan Tensions</a></li>
+            <li><a href="#">Red Sea Shipping</a></li>
+            <li><a href="#">Global Inflation</a></li>
+            <li><a href="#">OPEC Oil Cuts</a></li>
+            <li><a href="#">AI Governance Summit</a></li>
+          </ul>
+        </div>
+
+        <div class="trending-col">
+          <h5 class="trending-col-heading">Trending in U.S.</h5>
+          <ul class="trending-list">
+            <li><a href="#">Presidential Race</a></li>
+            <li><a href="#">Economy &amp; Inflation</a></li>
+            <li><a href="#">Border Security</a></li>
+            <li><a href="#">Supreme Court Rulings</a></li>
+            <li><a href="#">Federal Deficit</a></li>
+            <li><a href="#">Student Debt Relief</a></li>
+            <li><a href="#">Tech Antitrust Cases</a></li>
+            <li><a href="#">Energy Policy</a></li>
+          </ul>
+        </div>
+
+        <div class="trending-col">
+          <h5 class="trending-col-heading">Trending in U.K.</h5>
+          <ul class="trending-list">
+            <li><a href="#">General Election</a></li>
+            <li><a href="#">NHS Wait Times</a></li>
+            <li><a href="#">Cost of Living Crisis</a></li>
+            <li><a href="#">Immigration Policy</a></li>
+            <li><a href="#">Bank of England Rates</a></li>
+            <li><a href="#">Water Industry Reform</a></li>
+            <li><a href="#">North Sea Energy</a></li>
+            <li><a href="#">Defense Spending</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-divider-rule"></div>
+
+      <!-- Row 2: Large Wordmark + Company / Help / Tools -->
+      <div class="footer-company-grid">
+        <div class="footer-brand-col">
+          <div class="footer-wordmark-container">
+            <span class="footer-huge-wordmark">TOGGLE NEWS</span>
+            <span class="footer-tagline">360° Ground News &amp; Google UI Intelligence</span>
+          </div>
+        </div>
+
+        <div class="footer-nav-col">
+          <h5 class="footer-nav-heading">Company</h5>
+          <ul class="footer-sub-links">
+            <li><a href="#">About</a></li>
+            <li><a href="#">Mission</a></li>
+            <li><a href="#">Press</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Leadership</a></li>
+            <li><a href="#">Transparency</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-nav-col">
+          <h5 class="footer-nav-heading">Help</h5>
+          <ul class="footer-sub-links">
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Bias Rating</a></li>
+            <li><a href="#">Factuality Methodology</a></li>
+            <li><a href="#">Blindspot Calculation</a></li>
+            <li><a href="#">Source Database</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-nav-col">
+          <h5 class="footer-nav-heading">Tools</h5>
+          <ul class="footer-sub-links">
+            <li><a href="#">News AI Assistant</a></li>
+            <li><a href="#">Blindspot Radar</a></li>
+            <li><a href="#">Headline Comparison</a></li>
+            <li><a href="#">Media Bias Chart</a></li>
+            <li><a href="#">News Diet Tracker</a></li>
+            <li><a href="#">Chrome Extension</a></li>
+            <li><a href="#">Mobile App</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-divider-rule subtle"></div>
+
+      <!-- Row 3: Legal, Socials, & Country Selector -->
+      <div class="footer-bottom-bar">
+        <div class="bottom-left-legal">
+          <span>&copy; 2026 Toggle News Inc. All rights reserved.</span>
+          <div class="bottom-legal-links">
+            <a href="#">Terms of Service</a>
+            <span class="dot">&middot;</span>
+            <a href="#">Privacy Policy</a>
+            <span class="dot">&middot;</span>
+            <a href="#">Editorial Guidelines</a>
+          </div>
+        </div>
+
+        <div class="bottom-right-actions">
+          <div class="footer-social-icons">
+            <a href="#" aria-label="X"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="#" aria-label="Facebook"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+            <a href="#" aria-label="LinkedIn"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>
+          </div>
+
+          <div class="country-selector-wrap">
+            <button class="country-selector-btn">
+              <span>🇺🇸 United States</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
