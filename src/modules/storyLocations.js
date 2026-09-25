@@ -14,5 +14,8 @@ export const STORY_LOCATIONS = {
   'story-ed-sheeran-vegas': 'Las Vegas',
   'story-houthi-drone': 'Middle East',
   'story-ukraine-weapons': 'Ukraine',
-  'story-san-francisco-homeless': 'San Francisco'
+  'story-san-francisco-homeless': 'San Francisco',
+  'story-rsv-vaccine-rollout': 'United States',
+  'story-nfl-concussion-protocol': 'United States',
+  'story-streaming-residuals-deal': 'Los Angeles'
 };

@@ -4,7 +4,12 @@ const STORAGE_KEYS = {
   THEME: 'toggle_news_theme',
   DIET_HISTORY: 'toggle_news_diet_history',
   BOOKMARKS: 'toggle_news_bookmarks',
-  POLLS: 'toggle_news_polls'
+  POLLS: 'toggle_news_polls',
+  ACCOUNT: 'toggle_news_account',
+  EDITION: 'toggle_news_edition',
+  NEWSLETTERS: 'toggle_news_newsletters',
+  FOLLOWED_TOPICS: 'toggle_news_followed_topics',
+  LOCAL_CITY: 'toggle_news_local_city'
 };
 
 class StateManager {
@@ -27,7 +32,12 @@ class StateManager {
         { storyId: 'story-defense-drone-contract', bias: 'Right', timestamp: Date.now() - 14400000 }
       ]),
       bookmarks: this.loadJSON(STORAGE_KEYS.BOOKMARKS, ['story-ai-antitrust']),
-      pollResponses: this.loadJSON(STORAGE_KEYS.POLLS, {})
+      pollResponses: this.loadJSON(STORAGE_KEYS.POLLS, {}),
+      account: this.loadJSON(STORAGE_KEYS.ACCOUNT, null), // { email, name, plan } | null
+      edition: this.loadJSON(STORAGE_KEYS.EDITION, { code: 'us', label: 'United States', flag: '🇺🇸' }),
+      newsletters: this.loadJSON(STORAGE_KEYS.NEWSLETTERS, {}), // newsletterId -> email
+      followedTopics: this.loadJSON(STORAGE_KEYS.FOLLOWED_TOPICS, []),
+      localCity: localStorage.getItem(STORAGE_KEYS.LOCAL_CITY) || ''
     };
   }
 
@@ -67,6 +77,25 @@ class StateManager {
     }
     if ('pollResponses' in updates) {
       this.saveJSON(STORAGE_KEYS.POLLS, this.state.pollResponses);
+    }
+    if ('account' in updates) {
+      this.saveJSON(STORAGE_KEYS.ACCOUNT, this.state.account);
+    }
+    if ('edition' in updates) {
+      this.saveJSON(STORAGE_KEYS.EDITION, this.state.edition);
+    }
+    if ('newsletters' in updates) {
+      this.saveJSON(STORAGE_KEYS.NEWSLETTERS, this.state.newsletters);
+    }
+    if ('followedTopics' in updates) {
+      this.saveJSON(STORAGE_KEYS.FOLLOWED_TOPICS, this.state.followedTopics);
+    }
+    if ('localCity' in updates) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.LOCAL_CITY, this.state.localCity);
+      } catch (e) {
+        console.warn('Failed to save local city:', e);
+      }
     }
 
     this.notify();
@@ -163,6 +192,65 @@ class StateManager {
   recordPollVote(storyId, answer) {
     const pollResponses = { ...this.state.pollResponses, [storyId]: answer };
     this.setState({ pollResponses });
+  }
+
+  clearPollVote(storyId) {
+    const pollResponses = { ...this.state.pollResponses };
+    delete pollResponses[storyId];
+    this.setState({ pollResponses });
+  }
+
+  // ── Account, edition, follows, newsletters, local news ─────────────────────
+  setAccount(account) {
+    this.setState({ account });
+  }
+
+  signOut() {
+    this.setState({ account: null });
+  }
+
+  setSubscriptionPlan(plan) {
+    if (!this.state.account) return;
+    this.setState({ account: { ...this.state.account, plan } });
+  }
+
+  setEdition(edition) {
+    this.setState({ edition });
+  }
+
+  isFollowingTopic(topic) {
+    return this.state.followedTopics.includes(topic);
+  }
+
+  toggleFollowTopic(topic) {
+    const isFollowing = this.state.followedTopics.includes(topic);
+    const followedTopics = isFollowing
+      ? this.state.followedTopics.filter(t => t !== topic)
+      : [...this.state.followedTopics, topic];
+    this.setState({ followedTopics });
+    return !isFollowing;
+  }
+
+  isSubscribed(newsletterId) {
+    return Boolean(this.state.newsletters[newsletterId]);
+  }
+
+  subscribeNewsletter(newsletterId, email) {
+    this.setState({ newsletters: { ...this.state.newsletters, [newsletterId]: email } });
+  }
+
+  unsubscribeNewsletter(newsletterId) {
+    const newsletters = { ...this.state.newsletters };
+    delete newsletters[newsletterId];
+    this.setState({ newsletters });
+  }
+
+  setLocalCity(city) {
+    this.setState({ localCity: city });
+  }
+
+  clearLocalCity() {
+    this.setState({ localCity: '' });
   }
 
   resetDiet() {

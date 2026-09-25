@@ -15,6 +15,24 @@ import { renderBiasBar } from './modules/biasBar.js';
 import { openAudioPlayer, closeAudioPlayer, handleAudioPlayerClick } from './modules/audioPlayer.js';
 import { openOutletDossier, closeOutletDossier } from './modules/outletModal.js';
 import { openNewsChatDrawer, closeNewsChatDrawer, handleChatClick } from './modules/newsChatDrawer.js';
+import {
+  openAccountModal,
+  closeAccountModal,
+  isAccountModalOpen,
+  getInitials,
+  getPlan
+} from './modules/accountModals.js';
+import {
+  renderLocalNewsWidget,
+  handleLocalCitySubmit,
+  openLocationPicker,
+  closeLocationPicker,
+  isLocationPickerOpen,
+  findCity,
+  getLocalStories,
+  formatCity
+} from './modules/localNews.js';
+import { handleNewsletterSubmit, renderNewsletterForm, NEWSLETTERS } from './modules/newsletterSignup.js';
 
 let showBookmarksOnly = false;
 
@@ -61,6 +79,21 @@ function getFilteredStories() {
   }
 
   return list;
+}
+
+// Reusable topic follow toggle for each Topic Spotlight header
+function renderFollowButton(topic) {
+  const isFollowing = store.isFollowingTopic(topic);
+  return `
+          <button class="spotlight-follow-btn ${isFollowing ? 'active' : ''}"
+                  data-action="toggle-follow-topic"
+                  data-topic="${topic}"
+                  title="${isFollowing ? `Stop following ${topic}` : `Follow ${topic}`}">
+            ${isFollowing
+              ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+              : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>'}
+            ${isFollowing ? 'Following' : 'Follow'}
+          </button>`;
 }
 
 // ── Ground News–style Homepage Feed ──────────────────────────────────────────
@@ -125,6 +158,9 @@ function renderHomeFeed(stories) {
 
   // Category · Location meta lines (reference style)
   const storyLocationMap = STORY_LOCATIONS;
+
+  // Topic follow state (Israel-Gaza spotlight)
+  const localCityEntry = findCity(store.getState().localCity);
 
   return `
     <!-- ══════════════════════════════════════════════════════════════════
@@ -312,6 +348,10 @@ function renderHomeFeed(stories) {
          ══════════════════════════════════════════════════════════════════ -->
     <section class="gn-local-section" aria-label="Local news and Daily Local News">
       <div class="local-rows-col">
+        <div class="local-rows-heading-row">
+          <h2 class="gn-main-section-heading">${localCityEntry ? `Local News near ${localCityEntry.city}` : 'Local News near you'}</h2>
+          ${localCityEntry ? `<button class="local-see-all-btn" data-action="view-local-feed">See all local stories &rsaquo;</button>` : ''}
+        </div>
         ${[
           { s: NEWS_STORIES.find(x => x.id === 'story-michigan-school-holidays'), loc: 'Dearborn' },
           { s: NEWS_STORIES.find(x => x.id === 'story-lawsuit-ai-conduct'), loc: 'United States' },
@@ -321,10 +361,11 @@ function renderHomeFeed(stories) {
           const dist = s.biasDistribution;
           const leanEntry = Object.entries(dist).sort((a, b) => b[1] - a[1])[0];
           const leanName = leanEntry[0] === 'left' ? 'Left' : leanEntry[0] === 'right' ? 'Right' : 'Center';
+          const rowLoc = localCityEntry && loc === 'Dearborn' ? localCityEntry.city : loc;
           return `
           <article class="local-row" data-action="open-modal" data-story-id="${s.id}">
             <div class="local-row-text">
-              <span class="local-row-meta">${s.category} &middot; ${loc}</span>
+              <span class="local-row-meta">${s.category} &middot; ${rowLoc}</span>
               <h3 class="local-row-headline">${s.title}</h3>
               <div class="tn-coverage-row">
                 <div class="gn-bias-strip mini">
@@ -341,20 +382,7 @@ function renderHomeFeed(stories) {
       </div>
 
       <!-- Daily Local News Widget -->
-      <aside class="local-news-widget">
-        <h2 class="lnw-title">Daily Local News</h2>
-        <p class="lnw-desc">Discover stories and media bias happening right in your city.</p>
-        <div class="lnw-input-row">
-          <input type="text" class="lnw-city-input" placeholder="Enter your city's name" aria-label="Enter your city's name" />
-          <button class="lnw-submit-btn">Submit</button>
-        </div>
-        <button class="lnw-setloc-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"></path>
-          </svg>
-          Set Location
-        </button>
-      </aside>
+      ${renderLocalNewsWidget()}
     </section>
 
 
@@ -366,10 +394,7 @@ function renderHomeFeed(stories) {
       <div class="spotlight-header-bar">
         <h2 class="spotlight-title">Israel-Gaza News</h2>
         <div class="spotlight-actions">
-          <button class="spotlight-follow-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            Follow
-          </button>
+          ${renderFollowButton('Israel-Gaza News')}
           <button class="spotlight-viewall-btn" data-action="navigate-view" data-view="blindspots">Read More</button>
         </div>
       </div>
@@ -456,10 +481,11 @@ function renderHomeFeed(stories) {
               <h4>Blindspot</h4>
             </div>
             <p class="ig-signup-desc">Get the weekly Blindspot report sent to your inbox and stay up to date with your bias blindspot.</p>
-            <form class="ig-signup-form" onsubmit="return false;">
-              <input type="email" class="ig-signup-input" placeholder="Email address" aria-label="Email address" />
-              <button type="submit" class="ig-signup-btn">Subscribe</button>
-            </form>
+            ${renderNewsletterForm({
+              newsletterId: 'blindspot-weekly',
+              inputClass: 'ig-signup-input',
+              buttonClass: 'ig-signup-btn'
+            })}
           </div>
         </div>
       </div>
@@ -556,10 +582,7 @@ function renderHomeFeed(stories) {
       <div class="spotlight-header-bar">
         <h2 class="spotlight-title">US Politics News</h2>
         <div class="spotlight-actions">
-          <button class="spotlight-follow-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            Follow
-          </button>
+          ${renderFollowButton('US Politics News')}
           <button class="spotlight-viewall-btn" data-action="open-modal" data-story-id="${nhlStory.id}">
             View all <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
@@ -691,6 +714,56 @@ function renderHomeFeed(stories) {
 }
 
 // Master Render Function
+// ── Local News Page (reached from the Daily Local News widget) ───────────────
+function renderLocalFeed() {
+  const entry = findCity(store.getState().localCity);
+
+  if (!entry) {
+    return `
+      <div class="gn-empty-state">
+        <h3>Set your location to see local coverage</h3>
+        <p>We match local outlets, coverage counts, and bias data for your city.</p>
+        <button class="local-empty-btn" data-action="open-location-picker">Set Location</button>
+      </div>`;
+  }
+
+  const state = store.getState();
+  const term = state.searchQuery.toLowerCase().trim();
+  const localStories = getLocalStories(entry).filter(story =>
+    !term ||
+    story.title.toLowerCase().includes(term) ||
+    story.neutralSummary.toLowerCase().includes(term)
+  );
+
+  return `
+    <section class="gn-local-page" aria-label="Local news feed">
+      <div class="local-page-header">
+        <div class="local-page-title-block">
+          <span class="local-page-eyebrow">${state.edition.flag} ${state.edition.label} edition</span>
+          <h1 class="local-page-title">Daily Local News &middot; ${entry.city}</h1>
+          <p class="local-page-sub">
+            ${entry.region}, ${entry.country} &middot;
+            ${localStories.length} stories tracked across Left, Center, and Right outlets
+            ${term ? ` matching "${state.searchQuery}"` : ''}.
+          </p>
+        </div>
+        <div class="local-page-actions">
+          <button class="local-page-btn secondary" data-action="open-location-picker">Change location</button>
+          <button class="local-page-btn" data-action="navigate-view" data-view="feed">Back to top stories</button>
+        </div>
+      </div>
+
+      <div class="local-page-grid">
+        <div class="local-page-list">
+          ${localStories.map(story => renderStoryCard(story)).join('')}
+        </div>
+        <div class="local-page-aside">
+          ${renderLocalNewsWidget()}
+        </div>
+      </div>
+    </section>`;
+}
+
 function render() {
   const state = store.getState();
   const filteredStories = getFilteredStories();
@@ -713,6 +786,38 @@ function render() {
     bookmarksCounterBadge.classList.add('hidden');
   }
   bookmarksNavBtn.classList.toggle('active', showBookmarksOnly);
+
+  // Header account state: Log in / avatar, Subscribe pill, edition flag
+  const loginBtn = document.querySelector('.gn-login-text-btn');
+  if (loginBtn) {
+    if (state.account) {
+      loginBtn.textContent = getInitials(state.account.name);
+      loginBtn.classList.add('signed-in');
+      loginBtn.title = `${state.account.name} · ${getPlan(state.account.plan).name} plan`;
+    } else {
+      loginBtn.textContent = 'Log in';
+      loginBtn.classList.remove('signed-in');
+      loginBtn.title = 'Log in or create an account';
+    }
+  }
+
+  const subscribeBtn = document.querySelector('.gn-subscribe-pill-btn');
+  if (subscribeBtn) {
+    const paidPlan = state.account && state.account.plan !== 'free';
+    subscribeBtn.textContent = paidPlan ? `${getPlan(state.account.plan).name} ✓` : 'Subscribe';
+    subscribeBtn.classList.toggle('active', Boolean(paidPlan));
+  }
+
+  const flagBtn = document.querySelector('.gn-country-flag-btn');
+  if (flagBtn) {
+    flagBtn.textContent = state.edition.flag;
+    flagBtn.title = `Edition: ${state.edition.label}`;
+  }
+
+  const footerCountryBtn = document.querySelector('.country-selector-btn span');
+  if (footerCountryBtn) {
+    footerCountryBtn.textContent = `${state.edition.flag} ${state.edition.label}`;
+  }
 
   // Update Navigation Tabs (gn-nav-item, gn-top-link)
   document.querySelectorAll('.gn-nav-item, .gn-top-link').forEach(tab => {
@@ -762,6 +867,10 @@ function render() {
         appView.innerHTML = renderDietTracker();
         break;
 
+      case 'local':
+        appView.innerHTML = renderLocalFeed();
+        break;
+
       case 'feed':
       default:
         appView.innerHTML = renderHomeFeed(filteredStories);
@@ -781,6 +890,10 @@ document.addEventListener('click', (e) => {
       store.closeStoryModal();
     }
     store.setCategory(target.dataset.category);
+    // Footer topic links also carry a target view
+    if (target.dataset.view && store.getState().activeView !== target.dataset.view) {
+      store.setView(target.dataset.view);
+    }
     return;
   }
 
@@ -868,6 +981,12 @@ document.addEventListener('click', (e) => {
       break;
     }
 
+    case 'clear-poll-vote': {
+      store.clearPollVote(target.dataset.storyId);
+      render();
+      break;
+    }
+
     case 'set-blindspot-filter': {
       const filter = target.dataset.filter;
       store.setBlindspotFilter(filter);
@@ -888,6 +1007,89 @@ document.addEventListener('click', (e) => {
       render();
       break;
     }
+
+    case 'toggle-follow-topic': {
+      store.toggleFollowTopic(target.dataset.topic);
+      break;
+    }
+
+    case 'open-subscribe':
+      openAccountModal('subscribe', render);
+      break;
+
+    case 'open-signin':
+      openAccountModal('signin', render);
+      break;
+
+    case 'open-edition':
+      openAccountModal('edition', render);
+      break;
+
+    case 'unsubscribe-newsletter': {
+      store.unsubscribeNewsletter(target.dataset.newsletterId);
+      break;
+    }
+
+    case 'open-location-picker':
+      openLocationPicker(render);
+      break;
+
+    case 'set-local-city': {
+      store.setLocalCity(target.dataset.city);
+      closeLocationPicker();
+      break;
+    }
+
+    case 'clear-local-city': {
+      store.clearLocalCity();
+      if (store.getState().activeView === 'local') store.setView('feed');
+      break;
+    }
+
+    case 'view-local-feed': {
+      if (!store.getState().localCity) {
+        openLocationPicker(render);
+      } else {
+        store.setView('local');
+      }
+      break;
+    }
+  }
+});
+
+// Newsletter signups + local city form submissions
+document.addEventListener('submit', (e) => {
+  const newsletterForm = e.target.closest('[data-newsletter-id]');
+  if (newsletterForm) {
+    e.preventDefault();
+    handleNewsletterSubmit(newsletterForm);
+    return;
+  }
+
+  const cityForm = e.target.closest('[data-local-city-form]');
+  if (cityForm) {
+    e.preventDefault();
+    handleLocalCitySubmit(cityForm, render);
+  }
+});
+
+// Header + footer account / edition triggers (inert controls before this pass)
+document.addEventListener('click', (e) => {
+  const subscribePill = e.target.closest('.gn-subscribe-pill-btn');
+  if (subscribePill) {
+    openAccountModal('subscribe', render);
+    return;
+  }
+
+  const loginBtn = e.target.closest('.gn-login-text-btn');
+  if (loginBtn) {
+    openAccountModal('signin', render);
+    return;
+  }
+
+  const editionTrigger = e.target.closest('.gn-country-flag-btn, .country-selector-btn');
+  if (editionTrigger) {
+    openAccountModal('edition', render);
   }
 });
 
@@ -939,7 +1141,11 @@ document.addEventListener('keydown', (e) => {
 
   switch (e.key) {
     case 'Escape':
-      if (document.getElementById('outlet-dossier-overlay')) {
+      if (isAccountModalOpen()) {
+        closeAccountModal();
+      } else if (isLocationPickerOpen()) {
+        closeLocationPicker();
+      } else if (document.getElementById('outlet-dossier-overlay')) {
         closeOutletDossier();
       } else if (document.getElementById('news-chat-drawer')) {
         closeNewsChatDrawer();
@@ -1129,8 +1335,26 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// ── Footer newsletter (outside the re-rendered app view) ─────────────────────
+function mountFooterNewsletter() {
+  const container = document.getElementById('footerNewsletter');
+  if (!container) return;
+
+  const newsletterState = JSON.stringify(store.getState().newsletters);
+  if (container.dataset.newsletterState === newsletterState) return;
+  container.dataset.newsletterState = newsletterState;
+
+  container.innerHTML = `
+    <span class="footer-nav-heading">Toggle Daily</span>
+    <p class="footer-newsletter-desc">${NEWSLETTERS['toggle-daily'].description}</p>
+    ${renderNewsletterForm({ newsletterId: 'toggle-daily', label: 'Sign up' })}
+  `;
+}
+
 // ── Boot app ────────────────────────────────────────────────────────────────
 store.subscribe(() => render());
+store.subscribe(() => mountFooterNewsletter());
+mountFooterNewsletter();
 
 // Apply hash on initial load
 applyHashToState();

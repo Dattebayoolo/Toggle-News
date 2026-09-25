@@ -5,6 +5,8 @@ import { renderBiasBar } from './biasBar.js';
 import { store } from './state.js';
 import { SOURCES, getSourceById } from '../data/sourcesData.js';
 import { NEWS_STORIES } from '../data/newsData.js';
+import { renderStoryTimeline } from './storyTimeline.js';
+import { renderCommunityPoll } from './communityPoll.js';
 
 let activeSourceFilter = 'all';
 
@@ -390,6 +392,8 @@ export function renderStoryModal(story) {
             </div>
           </div>
 
+          ${renderStoryTimeline(story)}
+
           <!-- Podcasts & Opinions Section -->
           <section class="article-podcast-section">
             <h3 class="podcast-section-title">Podcasts & Opinions</h3>
@@ -555,6 +559,8 @@ export function renderStoryModal(story) {
               <button class="stream-more-btn">More articles</button>
             </div>
           </section>
+
+          ${renderCommunityPoll(story)}
 
         </main>
 

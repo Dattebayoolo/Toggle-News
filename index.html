@@ -143,15 +143,15 @@
         <div class="trending-col">
           <h5 class="trending-col-heading">Topics</h5>
           <ul class="trending-list">
-            <li><a href="#">World News</a></li>
-            <li><a href="#">US Politics</a></li>
-            <li><a href="#">Local News</a></li>
-            <li><a href="#">Entertainment</a></li>
-            <li><a href="#">Sports</a></li>
-            <li><a href="#">Business</a></li>
-            <li><a href="#">Tech</a></li>
-            <li><a href="#">Science</a></li>
-            <li><a href="#">Health</a></li>
+            <li><a href="#" data-category="World" data-view="feed">World News</a></li>
+            <li><a href="#" data-category="Politics" data-view="feed">US Politics</a></li>
+            <li><a href="#" data-action="navigate-view" data-view="local">Local News</a></li>
+            <li><a href="#" data-category="Entertainment" data-view="feed">Entertainment</a></li>
+            <li><a href="#" data-category="Sports" data-view="feed">Sports</a></li>
+            <li><a href="#" data-category="Economy" data-view="feed">Business</a></li>
+            <li><a href="#" data-category="Technology" data-view="feed">Tech</a></li>
+            <li><a href="#" data-category="Science" data-view="feed">Science</a></li>
+            <li><a href="#" data-category="Health" data-view="feed">Health</a></li>
           </ul>
         </div>
 
@@ -222,6 +222,9 @@
             <span class="footer-huge-wordmark">TOGGLE NEWS</span>
             <span class="footer-tagline">360° Ground News &amp; Google UI Intelligence</span>
           </div>
+
+          <!-- Newsletter signup (component rendered by newsletterSignup.js) -->
+          <div class="footer-newsletter-col" id="footerNewsletter"></div>
         </div>
 
         <div class="footer-nav-col">
@@ -255,13 +258,13 @@
         <div class="footer-nav-col">
           <h5 class="footer-nav-heading">Tools</h5>
           <ul class="footer-sub-links">
-            <li><a href="#">News AI Assistant</a></li>
-            <li><a href="#">Blindspot Radar</a></li>
-            <li><a href="#">Headline Comparison</a></li>
-            <li><a href="#">Media Bias Chart</a></li>
-            <li><a href="#">News Diet Tracker</a></li>
-            <li><a href="#">Chrome Extension</a></li>
-            <li><a href="#">Mobile App</a></li>
+            <li><a href="#" data-action="open-news-chat">News AI Assistant</a></li>
+            <li><a href="#" data-action="navigate-view" data-view="blindspots">Blindspot Radar</a></li>
+            <li><a href="#" data-action="navigate-view" data-view="matrix">Headline Comparison</a></li>
+            <li><a href="#" data-action="navigate-view" data-view="directory">Media Bias Chart</a></li>
+            <li><a href="#" data-action="navigate-view" data-view="diet">News Diet Tracker</a></li>
+            <li><a href="#" data-action="navigate-view" data-view="local">Daily Local News</a></li>
+            <li><a href="#" data-action="open-subscribe">Plans &amp; Pricing</a></li>
           </ul>
         </div>
       </div>
