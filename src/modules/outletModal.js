@@ -2,80 +2,54 @@
 // Opens when user clicks any publisher avatar or source badge
 
 import { SOURCES } from '../data/sourcesData.js';
+import { getLiveStories } from './liveFeed.js';
 
-// Supplementary data for outlet dossiers
+// Supplementary reference ratings for outlet dossiers.
+// Ad Fontes Media "Media Bias Chart" scores, Media Bias/Fact Check factuality
+// grades, and AllSides ratings — all published third-party ratings, not our own.
+// Deliberately no `recentHeadlines`: headlines now come from the live wire.
 const OUTLET_EXTENDED = {
   'cnn': {
     adFontes: 42.5,
     mbfc: 'High',
     allsidesScore: 'Lean Left',
     founded: 1980,
-    hq: 'Atlanta, Georgia, USA',
-    recentHeadlines: [
-      'Trump signals possible reversal on Canada tariffs amid economic pressure',
-      'Federal Reserve holds rates steady as inflation ticks up slightly',
-      'Democrats split on AI regulation strategy ahead of 2026 midterms',
-    ]
+    hq: 'Atlanta, Georgia, USA'
   },
   'nyt': {
     adFontes: 50.2,
     mbfc: 'Very High',
     allsidesScore: 'Lean Left',
     founded: 1851,
-    hq: 'New York City, USA',
-    recentHeadlines: [
-      'Inside the White House debate over AI military deployment',
-      'Trump\'s "AI Czar" search narrows to three candidates',
-      'What the AI Force means for Silicon Valley\'s defense contracts',
-    ]
+    hq: 'New York City, USA'
   },
   'fox-news': {
     adFontes: 26.2,
     mbfc: 'Mixed',
     allsidesScore: 'Right',
     founded: 1996,
-    hq: 'New York City, USA',
-    recentHeadlines: [
-      'Trump announces AI Force to counter China\'s growing dominance',
-      'Democrats slam administration AI plan as "government overreach"',
-      'Border security tech: How AI is reshaping enforcement on the southern border',
-    ]
+    hq: 'New York City, USA'
   },
   'reuters': {
     adFontes: 56.7,
     mbfc: 'Very High',
     allsidesScore: 'Center',
     founded: 1851,
-    hq: 'London, United Kingdom',
-    recentHeadlines: [
-      'US, China to hold rare AI security talks in Washington',
-      'Bessent confirms diplomatic channel open for semiconductor trade',
-      'Global AI regulation summit set for November in Geneva',
-    ]
+    hq: 'London, United Kingdom'
   },
   'bbc': {
     adFontes: 53.8,
     mbfc: 'High',
     allsidesScore: 'Center',
     founded: 1927,
-    hq: 'London, United Kingdom',
-    recentHeadlines: [
-      'Trump AI Force: What the plan means for US tech strategy',
-      'UK warns of risks in unregulated AI military applications',
-      'China responds to US AI Force announcement with "deep concern"',
-    ]
+    hq: 'London, United Kingdom'
   },
   'wsj': {
     adFontes: 46.1,
     mbfc: 'High',
     allsidesScore: 'Lean Right',
     founded: 1889,
-    hq: 'New York City, USA',
-    recentHeadlines: [
-      'Trump\'s AI Force: A regulatory win for big tech or a new bureaucracy?',
-      'Markets rally on AI policy clarity from White House',
-      'Semiconductor stocks surge as AI military spending signals boost demand',
-    ]
+    hq: 'New York City, USA'
   }
 };
 
@@ -109,9 +83,13 @@ function renderOutletModal(source, ext) {
   const biasConf = BIAS_LABELS[biasKey] || BIAS_LABELS['0'];
   const factConf = FACTUALITY_CONFIG[source.factuality] || FACTUALITY_CONFIG['Mixed'];
   const adFontes = ext.adFontes ?? '—';
-  const headlines = ext.recentHeadlines ?? [
-    'No recent headlines available for this outlet.',
-  ];
+  // Headlines come from the live wire, matched on the outlet id assigned by the
+  // bias database. When the outlet published nothing in the current window we say
+  // so rather than showing stand-in copy.
+  const headlines = getLiveStories()
+    .filter(item => item.rating?.outletId === source.id)
+    .slice(0, 5)
+    .map(item => item.title);
 
   const ownershipTypeColors = {
     'Corporate Conglomerate': '#eab308',
@@ -207,9 +185,10 @@ function renderOutletModal(source, ext) {
         </div>
       </div>
 
-      <!-- Recent Headlines -->
+      <!-- Recent Headlines (from the live wire) -->
       <div class="od-section">
         <h3 class="od-section-title">Recent Headlines</h3>
+        ${headlines.length ? `
         <ul class="od-headlines-list">
           ${headlines.map(h => `
             <li class="od-headline-item">
@@ -219,7 +198,10 @@ function renderOutletModal(source, ext) {
               <span>${h}</span>
             </li>
           `).join('')}
-        </ul>
+        </ul>` : `
+        <p class="od-empty-note">
+          No articles from this outlet in the current wire window. Stand-in headlines are not shown.
+        </p>`}
       </div>
 
       <!-- Footer Actions -->

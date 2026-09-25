@@ -25,13 +25,8 @@ class StateManager {
       globalPerspective: 'balanced', // 'balanced' | 'left' | 'center' | 'right'
       storyPerspectives: {}, // storyId -> 'balanced' | 'left' | 'center' | 'right'
       spectrumValue: 50, // 0 = 100% Left, 50 = Neutral/Balanced, 100 = 100% Right
-      dietHistory: this.loadJSON(STORAGE_KEYS.DIET_HISTORY, [
-        { storyId: 'story-ai-antitrust', bias: 'Left', timestamp: Date.now() - 3600000 },
-        { storyId: 'story-climate-lawsuit', bias: 'Left', timestamp: Date.now() - 7200000 },
-        { storyId: 'story-fed-rates', bias: 'Center', timestamp: Date.now() - 10800000 },
-        { storyId: 'story-defense-drone-contract', bias: 'Right', timestamp: Date.now() - 14400000 }
-      ]),
-      bookmarks: this.loadJSON(STORAGE_KEYS.BOOKMARKS, ['story-ai-antitrust']),
+      dietHistory: this.loadJSON(STORAGE_KEYS.DIET_HISTORY, []),
+      bookmarks: this.loadJSON(STORAGE_KEYS.BOOKMARKS, []),
       pollResponses: this.loadJSON(STORAGE_KEYS.POLLS, {}),
       account: this.loadJSON(STORAGE_KEYS.ACCOUNT, null), // { email, name, plan } | null
       edition: this.loadJSON(STORAGE_KEYS.EDITION, { code: 'us', label: 'United States', flag: '🇺🇸' }),
@@ -176,14 +171,15 @@ class StateManager {
     this.setState({ bookmarks });
   }
 
-  recordReadStory(storyId, biasDistribution) {
-    // Record in user diet
+  recordReadStory(storyId, biasDistribution, title = null) {
+    // Record in user diet. The title is stored alongside the bias so history rows
+    // survive a reload — live article ids are only resolvable within a session.
     const dominantBias = biasDistribution.left > biasDistribution.right
       ? (biasDistribution.left > biasDistribution.center ? 'Left' : 'Center')
       : (biasDistribution.right > biasDistribution.center ? 'Right' : 'Center');
 
     const dietHistory = [
-      { storyId, bias: dominantBias, leftPct: biasDistribution.left, centerPct: biasDistribution.center, rightPct: biasDistribution.right, timestamp: Date.now() },
+      { storyId, title, bias: dominantBias, leftPct: biasDistribution.left, centerPct: biasDistribution.center, rightPct: biasDistribution.right, timestamp: Date.now() },
       ...this.state.dietHistory.filter(item => item.storyId !== storyId)
     ].slice(0, 100); // keep last 100
     this.setState({ dietHistory });

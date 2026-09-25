@@ -1,3 +1,7 @@
+import { loadEnv } from './env.js';
+
+loadEnv(); // hydrate process.env from server/.env before anything reads it
+
 import express from 'express';
 import { loadSources } from './sources.js';
 import { fetchAllSources, startScheduler } from './scheduler.js';

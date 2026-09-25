@@ -33,6 +33,16 @@ import {
   formatCity
 } from './modules/localNews.js';
 import { handleNewsletterSubmit, renderNewsletterForm, NEWSLETTERS } from './modules/newsletterSignup.js';
+import {
+  refreshLiveFeed,
+  subscribeLiveFeed,
+  getLiveStories,
+  getLiveState,
+  findLiveStory,
+  filterLiveStories,
+  renderLiveWireSection,
+  renderLiveArticleModal
+} from './modules/liveFeed.js';
 
 let showBookmarksOnly = false;
 
@@ -81,6 +91,21 @@ function getFilteredStories() {
   return list;
 }
 
+// Live wire articles and curated stories share one lookup, so bookmarks, hash
+// routing, and the article page behave identically for both kinds of story.
+function findStory(id) {
+  return NEWS_STORIES.find(s => s.id === id) || findLiveStory(id);
+}
+
+// Live Wire rail for the current category / search filters.
+function renderLiveWire() {
+  const state = store.getState();
+  return renderLiveWireSection(
+    filterLiveStories(getLiveStories(), { category: state.activeCategory, query: state.searchQuery }),
+    getLiveState()
+  );
+}
+
 // Reusable topic follow toggle for each Topic Spotlight header
 function renderFollowButton(topic) {
   const isFollowing = store.isFollowingTopic(topic);
@@ -100,6 +125,8 @@ function renderFollowButton(topic) {
 function renderHomeFeed(stories) {
   if (stories.length === 0) {
     return `
+      ${renderLiveWire()}
+
       <div class="gn-empty-state">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 16px;display:block;opacity:0.3">
           <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -166,6 +193,8 @@ function renderHomeFeed(stories) {
     <!-- ══════════════════════════════════════════════════════════════════
          SECTION 1: DAILY BRIEFING (Ground News 3-Column Top Hero Grid)
          ══════════════════════════════════════════════════════════════════ -->
+    ${renderLiveWire()}
+
     <section class="gn-briefing-section" aria-label="Daily Briefing">
       <div class="briefing-header-bar">
         <h2 class="briefing-section-title">Daily Briefing</h2>
@@ -842,8 +871,10 @@ function render() {
 
   // Render View Content
   if (state.selectedStoryId) {
-    const selectedStory = NEWS_STORIES.find(s => s.id === state.selectedStoryId);
-    appView.innerHTML = renderStoryModal(selectedStory);
+    const liveStory = findLiveStory(state.selectedStoryId);
+    appView.innerHTML = liveStory
+      ? renderLiveArticleModal(liveStory)
+      : renderStoryModal(findStory(state.selectedStoryId));
     modalContainer.innerHTML = '';
     document.body.style.overflow = '';
   } else {
@@ -936,7 +967,7 @@ document.addEventListener('click', (e) => {
 
     case 'open-modal': {
       const storyId = target.dataset.storyId;
-      const story = NEWS_STORIES.find(s => s.id === storyId);
+      const story = findStory(storyId);
       if (story) {
         store.openStoryModal(storyId, story.biasDistribution);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -951,6 +982,15 @@ document.addEventListener('click', (e) => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       break;
     }
+
+    case 'refresh-live': {
+      refreshLiveFeed().then(() => render());
+      break;
+    }
+
+    case 'open-external':
+      // Outbound publisher links keep their default browser behaviour.
+      break;
 
     case 'toggle-bookmark': {
       const storyId = target.dataset.storyId;
@@ -1266,7 +1306,7 @@ function applyHashToState() {
   }
   if (hash.startsWith('story/')) {
     const storyId = hash.replace('story/', '');
-    const story = NEWS_STORIES.find(s => s.id === storyId);
+    const story = findStory(storyId);
     if (story) {
       store.openStoryModal(storyId, story.biasDistribution);
     } else {
@@ -1309,7 +1349,7 @@ document.addEventListener('click', (e) => {
   if (chatBtn) {
     const state = store.getState();
     const storyCtx = state.selectedStoryId
-      ? NEWS_STORIES.find(s => s.id === state.selectedStoryId)
+      ? findStory(state.selectedStoryId)
       : null;
     openNewsChatDrawer(storyCtx);
     return;
@@ -1355,6 +1395,10 @@ function mountFooterNewsletter() {
 store.subscribe(() => render());
 store.subscribe(() => mountFooterNewsletter());
 mountFooterNewsletter();
+
+// Live wire: pull real articles from the API, then re-render on every update.
+subscribeLiveFeed(() => render());
+refreshLiveFeed();
 
 // Apply hash on initial load
 applyHashToState();

@@ -14,6 +14,7 @@ db.exec(`
 CREATE TABLE IF NOT EXISTS articles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   source_id TEXT NOT NULL,
+  publisher TEXT,
   url TEXT NOT NULL UNIQUE,
   url_hash TEXT NOT NULL UNIQUE,
   title TEXT NOT NULL,
@@ -41,11 +42,24 @@ CREATE TABLE IF NOT EXISTS fetch_log (
 );
 `);
 
+/** Add a column when a newer release introduced it (no-op on fresh databases). */
+function ensureColumn(table, column, definition) {
+  const exists = db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === column);
+  if (exists) return false;
+  db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  return true;
+}
+
+// Migrate databases created before articles carried the originating publisher.
+// This must run before the statements below are prepared — SQLite validates
+// column names against the live schema at prepare time.
+ensureColumn('articles', 'publisher', 'TEXT');
+
 const insertArticle = db.prepare(`
   INSERT OR IGNORE INTO articles
-    (source_id, url, url_hash, title, title_hash, author, summary, image_url, category, published_at)
+    (source_id, publisher, url, url_hash, title, title_hash, author, summary, image_url, category, published_at)
   VALUES
-    (@sourceId, @url, @urlHash, @title, @titleHash, @author, @summary, @imageUrl, @category, @publishedAt)
+    (@sourceId, @publisher, @url, @urlHash, @title, @titleHash, @author, @summary, @imageUrl, @category, @publishedAt)
 `);
 
 const insertLog = db.prepare(`

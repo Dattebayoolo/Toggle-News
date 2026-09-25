@@ -14,77 +14,35 @@ const QUICK_PROMPTS = [
   { id: 'framing',   text: 'How does headline framing differ between Left and Right sources?' },
 ];
 
-// Simulated AI responses keyed by prompt
-const AI_RESPONSES = {
-  blindspot: `**Right-leaning outlets** (Fox News, NY Post, Washington Times) are emphasizing:
-• The national security angle — framing the AI Force as a necessary deterrent against China's "military AI supremacy."
-• Economic benefits — citing projected defense contractor job creation and semiconductor supply chain investment.
-• Criticism of the regulatory approach by Democrats as "bureaucratic overreach that will slow American innovation."
+// There is no language model behind this drawer, so it writes no analysis.
+// It reports only the verifiable facts Toggle News actually holds for the open
+// article and states plainly that narrative analysis is unavailable.
+function buildAssistantNotice() {
+  const rating = currentStoryContext?.rating;
+  const disclaimer =
+    'This assistant is **not connected to a language model**, so it cannot compare framing, ' +
+    'score factuality, or summarise disagreements. Nothing is generated here rather than a simulated answer.';
 
-**Left-leaning outlets** (CNN, MSNBC, The Guardian) are largely *not* discussing:
-• The specific $48B proposed AI Force budget allocation.
-• The role of private contractors like Palantir and Anduril in shaping the policy.
-• China's counter-reaction and what their official state media (Xinhua) reported.`,
+  if (!currentStoryContext) {
+    return disclaimer + '\n\nOpen an article to see the verified facts Toggle News holds: publisher, bias rating, and the original source.';
+  }
 
-  disagree: `**Key points of factual dispute across outlets:**
+  const biasLine = rating?.hasLean
+    ? rating.bias + (rating.rated ? '' : ' (from its feeding wire)')
+    : 'Not rated — this publisher is not in our database';
 
-1. **Who is the "AI Czar"?** — Right-leaning sources say David Sacks *will* be appointed; left-leaning sources report he stepped back and another name is in consideration.
+  return [
+    disclaimer,
+    '',
+    'Verified details for the open article:',
+    '• **Publisher:** ' + (currentStoryContext.publisher || 'Unknown'),
+    '• **Bias rating:** ' + biasLine,
+    '• **Factuality:** ' + (rating?.factuality || 'Not rated'),
+    '• **Original article:** ' + (currentStoryContext.articleUrl || '—')
+  ].join('\n');
+}
 
-2. **Scope of the AI Force** — Conservative outlets describe it as a new "branch-equivalent agency." Progressive outlets frame it as a rebranded advisory board with no enforcement authority.
 
-3. **China threat assessment** — Sources differ sharply on whether China is ahead of the US in military AI. Center outlets cite RAND Corporation data. Right-leaning outlets cite government assessments. Left-leaning outlets emphasize the report's political motivations.`,
-
-  factcheck: `**Disputed or unverified claims identified across ${Math.floor(Math.random() * 6) + 4} sources:**
-
-• **Claim:** "China has surpassed the US in AI military capability."
-  → *Status: DISPUTED.* Partially supported by DIA assessment but contradicted by CSIS and MIT Lincoln Lab research.
-
-• **Claim:** "Trump's AI Force will operate independently of Congress."
-  → *Status: UNVERIFIED.* No official executive order has been published yet. Legislative authority details are pending.
-
-• **Claim:** "This is modelled on Space Force."
-  → *Status: MOSTLY TRUE.* Administration officials confirmed the structural inspiration, but statutory framework differs significantly.`,
-
-  foreign: `**International coverage breakdown:**
-
-🇬🇧 **UK outlets** (BBC, The Guardian, The Telegraph) — Focus on NATO implications and whether the AI Force signals unilateral US action outside alliance frameworks.
-
-🇩🇪 **German outlets** (Der Spiegel, DW) — Emphasize fears of an AI arms race and call for an EU-equivalent coordinated response.
-
-🇨🇳 **Chinese state media** (Xinhua, Global Times) — Characterize the announcement as "aggressive provocation" and "technological hegemony dressed as security."
-
-🇷🇺 **Russian state media** (RT, TASS) — Frame the AI Force as evidence of "US imperial overreach" while simultaneously touting Russia's own military AI programs.
-
-🇯🇵 **Japanese outlets** (Nikkei Asia) — Cover semiconductor supply chain implications and what AI Force procurement means for TSMC and allied chip manufacturers.`,
-
-  context: `**Historical context:**
-
-The AI Force proposal follows a decade of escalating **tech cold war dynamics** between the US and China:
-
-• **2017** — China announced its *New Generation AI Development Plan*, targeting AI supremacy by 2030.
-• **2018** — US Congress created the National Security Commission on AI (NSCAI) to assess competitive risks.
-• **2021** — NSCAI Final Report warned: *"The US is not prepared for the coming era of AI-powered competition."*
-• **2022** — Congress passed the CHIPS Act ($52B) to rebuild domestic semiconductor manufacturing.
-• **2023–24** — Biden administration export controls on advanced chips to China.
-• **2025** — Trump administration announces AI Force as the operational military arm of this national AI strategy.
-
-The AI Force concept has historical precedent: **Space Force** (2019) similarly carved out a specialized domain from the Air Force. Critics warn the same growing pains — budget battles, talent recruitment, and civil-military integration — will repeat.`,
-
-  framing: `**Headline framing analysis — Left vs. Right:**
-
-| Outlet (Bias) | Headline Framing |
-|---|---|
-| *The Guardian* (Left) | "Trump's AI Force: Militarizing technology without guardrails" |
-| *MSNBC* (Left) | "Experts warn AI Force could entrench surveillance state" |
-| *Reuters* (Center) | "Trump announces AI Force, appoints czar to lead military AI coordination" |
-| *The Hill* (Center) | "Trump proposes AI Force amid rogue-agent fears but rejects new regulations" |
-| *Fox News* (Right) | "Trump launches AI Force — bold move to keep America ahead of China" |
-| *NY Post* (Right) | "Trump creates AI Force to dominate China in tech cold war" |
-
-**Pattern observed:** Left-leaning framing emphasizes *risk and accountability*. Right-leaning framing emphasizes *strength and national competition*. Center framing describes *the action* with minimal normative weight.`,
-
-  default: `I'm analyzing ${Math.floor(Math.random() * 200) + 50} sources across the political spectrum on this story. Based on the available coverage, there are significant divergences in framing, emphasis, and factual claims. Please select one of the quick-prompt options above or ask a specific question about this story's media coverage.`,
-};
 
 function formatAIResponse(text) {
   // Convert markdown-style bold and bullets to HTML
@@ -144,30 +102,17 @@ function updateChatDOM() {
   scrollToBottom();
 }
 
-function simulateResponse(promptKey) {
-  // Show typing indicator
-  messages.push({ role: 'thinking', content: '' });
+function simulateResponse() {
+  // No model call and no fake "typing" theatre — answer immediately and honestly.
+  messages.push({ role: 'assistant', content: buildAssistantNotice() });
   updateChatDOM();
-
-  const delay = 900 + Math.random() * 600;
-  setTimeout(() => {
-    messages.pop(); // remove thinking bubble
-    const responseText = AI_RESPONSES[promptKey] || AI_RESPONSES.default;
-    messages.push({ role: 'assistant', content: responseText });
-    updateChatDOM();
-  }, delay);
 }
 
 export function openNewsChatDrawer(storyContext = null) {
   currentStoryContext = storyContext;
   chatOpen = true;
   if (messages.length === 0) {
-    messages.push({
-      role: 'assistant',
-      content: storyContext
-        ? `I'm analyzing **${storyContext.sourceCount}+ sources** across the Left, Center, and Right for this story. I can help you understand how different outlets are framing the narrative, identify blindspots, and fact-check key claims.\n\nWhat would you like to know?`
-        : `I'm your AI media literacy assistant. I can help you analyze news stories, identify coverage blindspots, compare how Left and Right outlets frame the same events, and fact-check key claims.\n\nOpen a story and ask me anything.`,
-    });
+    messages.push({ role: 'assistant', content: buildAssistantNotice() });
   }
   renderDrawer();
 }
@@ -246,7 +191,7 @@ function renderDrawer() {
           </div>
           <div>
             <h3 class="chat-title">My News Chat</h3>
-            <span class="chat-subtitle">AI-powered media analysis${currentStoryContext ? ' · ' + currentStoryContext.sourceCount + ' sources' : ''}</span>
+            <span class="chat-subtitle">Assistant not connected${currentStoryContext?.publisher ? ' · ' + currentStoryContext.publisher : ''}</span>
           </div>
         </div>
         <div class="chat-header-actions">

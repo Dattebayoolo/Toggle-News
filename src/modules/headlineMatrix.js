@@ -3,15 +3,53 @@
 
 import { renderBiasBar } from './biasBar.js';
 
-export function renderHeadlineMatrix(stories) {
-  if (!stories.length) {
-    return `
-      <div class="empty-state">
-        <h3>No matching stories found</h3>
-        <p>Try adjusting your category or search filter.</p>
+/**
+ * Shown whenever there is no curated framing data to compare — which is always
+ * the case while the app is driven purely by wire articles.
+ *
+ * Comparing headlines side by side only means something when they cover the SAME
+ * event. A wire article is one publisher's headline, and we have no clustering to
+ * prove two wire articles describe the same event — so pairing them would imply
+ * agreement or opposition that was never established. This page explains the gap
+ * rather than inventing framing.
+ */
+export function renderHeadlineMatrixUnavailable() {
+  return `
+    <div class="matrix-container">
+      <div class="matrix-header-banner">
+        <div class="matrix-banner-text">
+          <h2>⚖️ Side-by-Side Headline Matrix</h2>
+          <p>Examine how different newsrooms frame the exact same event. Notice the tone, vocabulary, and rhetoric differences between Left, Center, and Right reporting.</p>
+        </div>
+        <div class="matrix-legend">
+          <span class="legend-badge left">🔵 Left Framing</span>
+          <span class="legend-badge center">🟣 Center / Wire</span>
+          <span class="legend-badge right">🔴 Right Framing</span>
+        </div>
       </div>
-    `;
-  }
+
+      <div class="editorial-unavailable-panel">
+        <span class="editorial-unavailable-badge">NOT AVAILABLE FROM WIRE DATA</span>
+        <h3>No framing comparison to show</h3>
+        <p>
+          This view needs three write-ups of the <strong>same event</strong> — one from the Left, one
+          Center, and one from the Right — so you can compare how each side framed it. That is editorial
+          analysis produced alongside curated reporting.
+        </p>
+        <p>
+          The articles currently in Toggle News come straight off the news wires. Each one is a single
+          publisher's headline, and none of them are grouped into same-event clusters, so nothing here
+          would be a fair comparison. Rather than pair up unrelated headlines and imply a disagreement
+          that was never established, this view stays empty.
+        </p>
+        <div class="editorial-unavailable-actions">
+          <button class="editorial-unavailable-btn" data-action="navigate-view" data-view="feed">Browse the live wire</button>
+          <button class="editorial-unavailable-btn secondary" data-action="navigate-view" data-view="directory">See outlet bias ratings</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
 
   return `
     <div class="matrix-container">

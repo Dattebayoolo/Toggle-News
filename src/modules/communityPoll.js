@@ -1,6 +1,8 @@
 // Community Blindspot Poll — the reader poll attached to every story dossier.
-// Story data supplies { question, yesCount, noCount }; the reader's own answer is
-// stored in state.pollResponses (see store.recordPollVote / store.clearPollVote).
+// Poll data is editorial content authored alongside a curated dossier; wire
+// articles carry none, so this module renders an explicit empty state rather
+// than a fabricated community split. The reader's own answer (if any) is stored
+// in state.pollResponses (see store.recordPollVote / store.clearPollVote).
 
 import { store } from './state.js';
 
@@ -40,7 +42,7 @@ function renderTallyRow(label, pct, count, variant) {
 
 export function renderCommunityPoll(story) {
   const tallies = getPollTallies(story);
-  if (!tallies) return '';
+  if (!tallies) return renderCommunityPollUnavailable();
 
   const hasVoted = Boolean(tallies.userVote);
 
@@ -81,6 +83,21 @@ export function renderCommunityPoll(story) {
             <p class="poll-total-caption">
               ${tallies.total.toLocaleString()} readers have voted. Cast your vote to reveal the community split.
             </p>`}
+          </section>
+  `;
+}
+
+/** Shown when a story carries no poll — i.e. for every wire article. */
+export function renderCommunityPollUnavailable() {
+  return `
+          <!-- Community Blindspot Poll — no poll data available -->
+          <section class="modal-poll-card editorial-unavailable" aria-label="Community poll">
+            <span class="poll-badge">COMMUNITY BLINDSPOT POLL</span>
+            <h4>No poll is attached to this story</h4>
+            <p class="poll-total-caption">
+              Reader polls are written by our editors alongside a curated story dossier.
+              Wire articles carry no poll, so nothing is shown here rather than an invented vote split.
+            </p>
           </section>
   `;
 }

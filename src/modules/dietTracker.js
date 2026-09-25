@@ -2,7 +2,7 @@
 // Personalized media diet analytics modeled on Ground News's Bias Tracker
 
 import { store } from './state.js';
-import { NEWS_STORIES } from '../data/newsData.js';
+import { findLiveStory } from './liveFeed.js';
 
 export function renderDietTracker() {
   const stats = store.calculateDietStats();
@@ -112,20 +112,21 @@ export function renderDietTracker() {
         ` : `
           <div class="history-list">
             ${history.map(item => {
-              const story = NEWS_STORIES.find(s => s.id === item.storyId);
-              if (!story) return '';
-
+              // The title is stored with the entry so history survives a reload —
+              // live article ids only resolve within the session that loaded them.
+              const story = findLiveStory(item.storyId);
+              const title = item.title || story?.title || 'Article';
               const timeStr = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
               return `
-                <div class="history-item" data-story-id="${story.id}">
+                <div class="history-item" data-story-id="${item.storyId}">
                   <div class="history-left">
                     <span class="bias-indicator-tag ${item.bias.toLowerCase()}">${item.bias} Dominant</span>
-                    <h5 class="history-title" data-action="open-modal" data-story-id="${story.id}">${story.title}</h5>
+                    <h5 class="history-title" data-action="open-modal" data-story-id="${item.storyId}">${title}</h5>
                   </div>
                   <div class="history-right">
                     <span class="history-time">${timeStr}</span>
-                    <button class="history-open-btn" data-action="open-modal" data-story-id="${story.id}">Review</button>
+                    <button class="history-open-btn" data-action="open-modal" data-story-id="${item.storyId}">Review</button>
                   </div>
                 </div>
               `;

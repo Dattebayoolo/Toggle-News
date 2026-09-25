@@ -4,8 +4,16 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Lazy-loaded fetcher implementations, keyed by the source `type`. Kept lazy to
+// avoid pulling network deps into tests that only read the source list.
+const loaders = {
+  rss: async () => (await import('./fetchers/rssFetcher.js')).fetchRss,
+  newsapi: async () => (await import('./fetchers/newsApiFetcher.js')).fetchNewsApi,
+};
+
 const fetchers = {
-  rss: null, // lazy-loaded below to avoid import cycles in tests
+  rss: null,
+  newsapi: null,
 };
 
 export function loadSources() {
@@ -16,7 +24,7 @@ export function loadSources() {
   for (const s of sources) {
     if (!s.id || seen.has(s.id)) continue;
     if (!s.enabled) continue;
-    if (!fetchers[s.type] && s.type !== 'rss') continue; // unknown type -> skip
+    if (!loaders[s.type]) continue; // unknown type -> skip
     seen.add(s.id);
     valid.push({ intervalMinutes: 15, ...s });
   }
@@ -24,12 +32,8 @@ export function loadSources() {
 }
 
 export async function getFetcher(type) {
-  if (!fetchers[type]) {
-    if (type === 'rss') {
-      fetchers.rss = (await import('./fetchers/rssFetcher.js')).fetchRss;
-    } else {
-      return null;
-    }
+  if (!fetchers[type] && loaders[type]) {
+    fetchers[type] = await loaders[type]();
   }
-  return fetchers[type];
+  return fetchers[type] || null;
 }

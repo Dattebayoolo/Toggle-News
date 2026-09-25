@@ -1,6 +1,9 @@
 // Story Timeline — chronology of how a story developed.
-// Every story in newsData.js ships a `timeline` array of { time, event } entries;
-// this module renders it and falls back to a derived chronology when missing.
+//
+// Timelines are editorial analysis authored alongside a curated dossier, so only
+// curated stories carry one. Wire articles arrive as a single snapshot with no
+// sequence of events, and this module deliberately does NOT invent one — it
+// renders an explicit empty state instead.
 
 function formatStoryDay(story) {
   const raw = story?.date;
@@ -15,29 +18,6 @@ function formatStoryDay(story) {
   });
 }
 
-// Fallback chronology derived from the story metadata so every dossier shows a timeline.
-function deriveTimeline(story) {
-  const factuality = story.factualityDistribution || { high: 80, mixed: 20, low: 0 };
-  return [
-    {
-      time: 'First report',
-      event: `Coverage opens across ${story.sourceCount} outlets in the ${story.category} desk.`
-    },
-    {
-      time: 'Wire summary',
-      event: `${story.neutralSummary ? 'Neutral summary verified' : 'Summary pending'} against ${story.sources?.length || 3} primary source reports.`
-    },
-    {
-      time: 'Factuality pass',
-      event: `${factuality.high}% of reporting rated High factuality by independent auditors.`
-    },
-    {
-      time: 'Latest update',
-      event: `Most recent developments as of ${story.timestamp || 'today'}.`
-    }
-  ];
-}
-
 export function getTimelineEvents(story) {
   if (!story) return [];
   if (Array.isArray(story.timeline) && story.timeline.length) {
@@ -46,12 +26,26 @@ export function getTimelineEvents(story) {
       event: item.event || ''
     }));
   }
-  return deriveTimeline(story);
+  return [];
+}
+
+/** Shown when a story carries no chronology — i.e. for every wire article. */
+export function renderStoryTimelineUnavailable() {
+  return `
+          <!-- Story Timeline — no chronology available -->
+          <section class="timeline-section article-timeline-card editorial-unavailable" aria-label="Story timeline">
+            <span class="timeline-unavailable-title">STORY TIMELINE</span>
+            <p class="timeline-unavailable-note">
+              Chronologies are assembled by our editors from curated reporting. Wire articles arrive as a
+              single snapshot with no sequence of events, so no timeline is invented here.
+            </p>
+          </section>
+  `;
 }
 
 export function renderStoryTimeline(story) {
   const events = getTimelineEvents(story);
-  if (!events.length) return '';
+  if (!events.length) return renderStoryTimelineUnavailable();
 
   const day = formatStoryDay(story);
 

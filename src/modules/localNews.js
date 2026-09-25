@@ -1,9 +1,10 @@
-// Daily Local News — interactive widget, local story matching, and the city picker.
-// Replaces the previously inert "Enter your city's name" / "Set Location" controls.
+// Daily Local News — interactive widget and city picker.
+//
+// The city directory below is real reference data, but geotagged local coverage is
+// not part of the connected wire feeds. Until a local source is wired in, the
+// widget and the local feed render explicit empty states instead of stand-in stories.
 
 import { store } from './state.js';
-import { NEWS_STORIES } from '../data/newsData.js';
-import { STORY_LOCATIONS } from './storyLocations.js';
 
 export const CITY_DIRECTORY = [
   { city: 'Dearborn', region: 'Michigan', country: 'United States' },
@@ -36,14 +37,6 @@ export const CITY_DIRECTORY = [
 
 export const POPULAR_CITIES = ['Dearborn', 'New York City', 'Chicago', 'San Francisco', 'London', 'Toronto'];
 
-function hashString(value = '') {
-  let hash = 0;
-  for (let i = 0; i < value.length; i += 1) {
-    hash = (hash * 31 + value.charCodeAt(i)) % 100000;
-  }
-  return hash;
-}
-
 export function findCity(cityName = '') {
   const needle = cityName.trim().toLowerCase();
   if (!needle) return null;
@@ -54,28 +47,15 @@ export function formatCity(entry) {
   return entry ? `${entry.city}, ${entry.region}` : '';
 }
 
-// Stories matched to a city: direct location matches first, then a deterministic
-// rotation of national/regional stories so every city has a filled local desk.
+// Local coverage is not supplied by the connected wires, so this returns an empty
+// list rather than padding the desk with unrelated national stories.
 export function getLocalStories(cityName) {
-  const entry = typeof cityName === 'string' ? findCity(cityName) : cityName;
-  if (!entry) return [];
-
-  const direct = NEWS_STORIES.filter(story => {
-    const loc = (STORY_LOCATIONS[story.id] || '').toLowerCase();
-    return loc === entry.city.toLowerCase();
-  });
-
-  const rotated = NEWS_STORIES
-    .filter(story => story.category !== 'World' && !direct.includes(story))
-    .slice(hashString(entry.city) % 6);
-
-  return [...direct, ...rotated];
+  return [];
 }
 
 export function renderLocalNewsWidget() {
   const { localCity, edition } = store.getState();
   const activeEntry = findCity(localCity);
-  const stories = activeEntry ? getLocalStories(activeEntry).slice(0, 3) : [];
 
   return `
       <!-- Daily Local News Widget -->
@@ -91,17 +71,14 @@ export function renderLocalNewsWidget() {
           </span>
           <div class="lnw-active-text">
             <strong>${formatCity(activeEntry)}</strong>
-            <span>${activeEntry.country} &middot; ${getLocalStories(activeEntry).length} local stories tracked</span>
+            <span>${activeEntry.country} &middot; local desk not connected</span>
           </div>
         </div>
 
-        <div class="lnw-local-list">
-          ${stories.map(story => `
-            <button class="lnw-local-row" data-action="open-modal" data-story-id="${story.id}">
-              <span class="lnw-local-headline">${story.title}</span>
-              <span class="lnw-local-meta">${story.category} &middot; ${story.sourceCount} sources</span>
-            </button>`).join('')}
-        </div>
+        <p class="lnw-unavailable-note">
+          No local source is wired into this desk yet. It stays empty rather than being filled with
+          unrelated national stories.
+        </p>
 
         <div class="lnw-active-actions">
           <button class="lnw-submit-btn" data-action="view-local-feed">View local feed</button>

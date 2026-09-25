@@ -71,6 +71,7 @@ export function toArticleRow(source, item) {
     null;
   return {
     sourceId: source.id,
+    publisher: source.name || null,
     url,
     urlHash: sha1(url),
     title,
@@ -80,5 +81,26 @@ export function toArticleRow(source, item) {
     imageUrl,
     category: source.category || null,
     publishedAt: toIsoDate(item.isoDate || item.pubDate),
+  };
+}
+
+/** Map a newsapi.org article + source config to a DB-ready row. */
+export function toNewsApiArticleRow(source, article) {
+  const url = normalizeUrl(article.url || '');
+  const title = stripHtml(article.title || '');
+  if (!url || !title || title === '[Removed]') return null;
+  const summary = stripHtml(article.description || article.content || '').slice(0, 1000);
+  return {
+    sourceId: source.id,
+    publisher: article.source?.name || source.name || null,
+    url,
+    urlHash: sha1(url),
+    title,
+    titleHash: sha1(normalizeTitle(title)),
+    author: article.author || null,
+    summary: summary || null,
+    imageUrl: article.urlToImage || null,
+    category: source.category || null,
+    publishedAt: toIsoDate(article.publishedAt),
   };
 }

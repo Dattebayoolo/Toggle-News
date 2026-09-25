@@ -1,29 +1,25 @@
 // Vantage Audio Player — Persistent floating podcast player bar
 // Simulates podcast audio playback with chapters, speed control, and scrubber
 
+// No audio source is connected. Episode metadata is only populated when a real
+// briefing is supplied to openAudioPlayer(); otherwise the bar renders an explicit
+// "unavailable" state rather than a stand-in episode.
 let playerState = {
   isOpen: false,
   isPlaying: false,
   currentTime: 0,        // seconds
-  duration: 1365,        // 22:45 total
+  duration: 0,
   playbackRate: 1,
-  episodeTitle: 'Global National: Oct. 17, 2025 • Liberals to propose major labour code changes',
-  episodeSource: 'Global National',
-  episodeSourceBg: '#bb1919',
-  episodeTag: 'Broadcast TV Show',
+  episodeTitle: null,
+  episodeSource: null,
+  episodeSourceBg: '#6366f1',
+  episodeTag: null,
   isMinimized: false,
   timerId: null,
 };
 
-// Chapter timestamps (seconds → label)
-const CHAPTERS = [
-  { time: 0,   label: 'Intro — AI Force Announcement' },
-  { time: 134, label: 'David Sacks Adviser Role' },
-  { time: 318, label: 'Google & China Data Center Race' },
-  { time: 512, label: 'Congressional Guardrail Debate' },
-  { time: 748, label: 'Treasury Secretary Bessent Briefing' },
-  { time: 1050, label: 'Global Semiconductor Supply Chain' },
-];
+// Chapters belong to a published briefing; there are none without one.
+const CHAPTERS = [];
 
 function formatTime(s) {
   const m = Math.floor(s / 60);
@@ -32,6 +28,7 @@ function formatTime(s) {
 }
 
 function getCurrentChapter() {
+  if (!CHAPTERS.length) return null;
   let chapter = CHAPTERS[0];
   for (const c of CHAPTERS) {
     if (playerState.currentTime >= c.time) chapter = c;
@@ -82,7 +79,7 @@ function updatePlayerDOM() {
   });
 
   const chapterEl = bar.querySelector('.ap-chapter-label');
-  if (chapterEl) chapterEl.textContent = chapter.label;
+  if (chapterEl && chapter) chapterEl.textContent = chapter.label;
 }
 
 export function openAudioPlayer(opts = {}) {
@@ -94,9 +91,10 @@ export function openAudioPlayer(opts = {}) {
   }
   playerState.isOpen = true;
   playerState.isMinimized = false;
-  playerState.isPlaying = true;
+  // Nothing to play without a real episode, so don't pretend to be playing.
+  playerState.isPlaying = Boolean(playerState.episodeTitle);
   renderPlayer();
-  startTicker();
+  if (playerState.isPlaying) startTicker();
 }
 
 export function closeAudioPlayer() {
@@ -179,6 +177,13 @@ export function renderPlayer() {
 
   if (!playerState.isOpen) return;
 
+  // No audio source is connected, so there is no episode to play. Say so plainly
+  // rather than rendering a full player over a stand-in briefing.
+  if (!playerState.episodeTitle) {
+    renderUnavailablePlayer();
+    return;
+  }
+
   const chapter = getCurrentChapter();
   const progress = (playerState.currentTime / playerState.duration * 100).toFixed(2);
   const waveCount = 7;
@@ -192,7 +197,7 @@ export function renderPlayer() {
         <circle cx="12" cy="12" r="10"></circle>
         <polyline points="12 6 12 12 16 14"></polyline>
       </svg>
-      <span class="ap-chapter-label">${chapter.label}</span>
+      <span class="ap-chapter-label">${chapter?.label || 'Audio briefing'}</span>
     </div>
 
     <div class="ap-main-row">
@@ -280,5 +285,37 @@ export function renderPlayer() {
   });
 
   // Animate in
+  requestAnimationFrame(() => bar.classList.add('visible'));
+}
+
+/** Compact bar shown when no audio briefing is available to play. */
+function renderUnavailablePlayer() {
+  const bar = document.createElement('div');
+  bar.id = 'vantage-audio-player';
+  bar.className = 'vantage-audio-player-bar is-unavailable';
+  bar.innerHTML = `
+    <div class="ap-chapter-strip">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      <span class="ap-chapter-label">Audio briefing</span>
+    </div>
+
+    <div class="ap-unavailable-row">
+      <span class="ap-unavailable-text">
+        No audio briefing is available. No podcast or broadcast audio source is connected, so nothing
+        is played rather than simulating an episode.
+      </span>
+      <button class="ap-icon-btn" data-ap-action="close" title="Close player">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(bar);
   requestAnimationFrame(() => bar.classList.add('visible'));
 }

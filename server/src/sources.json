@@ -43,5 +43,50 @@
     "category": "tech",
     "enabled": true,
     "intervalMinutes": 10
+  },
+  {
+    "id": "newsapi-us-top",
+    "name": "NewsAPI — US Top Headlines",
+    "type": "newsapi",
+    "endpoint": "top-headlines",
+    "apiKeyEnv": "NEWSAPI_KEY",
+    "params": {
+      "country": "us",
+      "pageSize": 50
+    },
+    "category": "world",
+    "enabled": true,
+    "intervalMinutes": 60
+  },
+  {
+    "id": "newsapi-tech",
+    "name": "NewsAPI — Technology Headlines",
+    "type": "newsapi",
+    "endpoint": "top-headlines",
+    "apiKeyEnv": "NEWSAPI_KEY",
+    "params": {
+      "category": "technology",
+      "language": "en",
+      "pageSize": 50
+    },
+    "category": "technology",
+    "enabled": true,
+    "intervalMinutes": 60
+  },
+  {
+    "id": "newsapi-search-ai",
+    "name": "NewsAPI — Search: Artificial Intelligence",
+    "type": "newsapi",
+    "endpoint": "everything",
+    "apiKeyEnv": "NEWSAPI_KEY",
+    "params": {
+      "q": "artificial intelligence",
+      "language": "en",
+      "sortBy": "publishedAt",
+      "pageSize": 50
+    },
+    "category": "technology",
+    "enabled": false,
+    "intervalMinutes": 120
   }
 ]

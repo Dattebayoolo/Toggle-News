@@ -4,7 +4,65 @@
 import { renderBiasBar } from './biasBar.js';
 import { store } from './state.js';
 
+/**
+ * Shown when no story carries a blindspot classification — which is always the
+ * case while the app runs on wire articles alone.
+ *
+ * A blindspot means "covered heavily by one side, ignored by the other". Deciding
+ * that requires the full set of outlets covering a given event, which comes from
+ * grouping articles by story. Wire articles arrive ungrouped, so a "blindspot"
+ * derived here would just be an outlet that happened not to publish in our pull —
+ * a sampling artefact, not a finding. This page explains that rather than
+ * presenting noise as a signal.
+ */
+export function renderBlindspotRadarUnavailable() {
+  return `
+    <div class="blindspot-radar-container">
+      <div class="blindspot-hero-card">
+        <div class="hero-badge">
+          <span class="radar-pulse"></span>
+          <span>ECHO CHAMBER DETECTOR</span>
+        </div>
+        <h2>
+          <svg class="heading-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a10 10 0 1 0 10 10"></path>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+          Blindspot Radar
+        </h2>
+        <p>A "Blindspot" is a significant news story covered disproportionately by one political side while being largely ignored or underreported by the other.</p>
+      </div>
+
+      <div class="editorial-unavailable-panel">
+        <span class="editorial-unavailable-badge">NOT AVAILABLE FROM WIRE DATA</span>
+        <h3>No blindspots have been classified</h3>
+        <p>
+          Calling something a blindspot means one side covered an event heavily while the other
+          ignored it. You can only say that once you know <strong>every outlet covering that
+          event</strong> — which means first grouping articles that describe the same story.
+        </p>
+        <p>
+          Toggle News currently holds individual wire articles with no same-event grouping. An outlet
+          that simply didn't publish inside our fetch window would look like a blindspot, so the
+          asymmetry figures would be a sampling artefact rather than a real finding. Nothing is shown
+          here instead of publishing that as a signal.
+        </p>
+        <div class="editorial-unavailable-actions">
+          <button class="editorial-unavailable-btn" data-action="navigate-view" data-view="feed">Browse the live wire</button>
+          <button class="editorial-unavailable-btn secondary" data-action="navigate-view" data-view="directory">See outlet bias ratings</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export function renderBlindspotRadar(stories) {
+  // Blindspot classification is editorial analysis, not a field the wires provide,
+  // so this renders an explicit explanation rather than a misleading empty filter.
+  if (!stories.some(s => s.isBlindspot)) return renderBlindspotRadarUnavailable();
+
   const currentFilter = store.getState().blindspotFilter;
 
   // Filter blindspot stories
