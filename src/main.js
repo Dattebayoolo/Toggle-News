@@ -4,6 +4,7 @@
 import { store } from './modules/state.js';
 import { NEWS_STORIES } from './data/newsData.js';
 import { renderStoryCard } from './modules/storyCard.js';
+import { STORY_LOCATIONS } from './modules/storyLocations.js';
 import { renderHeadlineMatrix } from './modules/headlineMatrix.js';
 import { renderBlindspotRadar } from './modules/blindspotRadar.js';
 import { renderMediaDirectory, attachDirectoryEvents } from './modules/mediaDirectory.js';
@@ -118,6 +119,13 @@ function renderHomeFeed(stories) {
     { title: 'More...' }
   ];
 
+  // Reference-style helpers: shortened related-link titles + compact read time
+  const shortTitle = (t) => t.split(' ').slice(0, 6).join(' ');
+  const shortRead = (r) => (r || '').replace(' min read', 'm read').replace(' mins read', 'm read');
+
+  // Category · Location meta lines (reference style)
+  const storyLocationMap = STORY_LOCATIONS;
+
   return `
     <!-- ══════════════════════════════════════════════════════════════════
          SECTION 1: DAILY BRIEFING (Ground News 3-Column Top Hero Grid)
@@ -130,27 +138,24 @@ function renderHomeFeed(stories) {
       <div class="briefing-trio-grid">
 
         <!-- Left Column: Ukraine Guided Munitions Story -->
-        <div class="briefing-col-left briefing-interactive-card" data-action="open-modal" data-story-id="${ukraineStory.id}">
+        <div class="briefing-col-left">
+          <div class="briefing-left-card briefing-interactive-card" data-action="open-modal" data-story-id="${ukraineStory.id}">
           <div class="briefing-card-media">
             <img src="${ukraineStory.heroImage}" alt="${ukraineStory.title}" loading="lazy" />
-            <div class="briefing-media-tag">${ukraineStory.category}</div>
           </div>
           <div class="briefing-card-content">
+            <div class="briefing-card-metaline">${ukraineStory.sources.length} stories &bull; ${ukraineStory.sourceCount} articles &bull; ${shortRead(ukraineStory.readTime)}</div>
             <h3 class="briefing-card-title">${ukraineStory.title}</h3>
-            <p class="briefing-card-snippet">Ukraine has pressed the US for the Army Tactical Missile Systems (ATACMS) to strike deeper behind Russian lines, as defense officials evaluate strategic stockpile thresholds.</p>
-            
-            <div class="briefing-bias-bar-wrap">
-              <div class="gn-bias-strip">
-                <div class="gn-seg gn-seg-left"   style="width:${ukraineStory.biasDistribution.left}%"   title="Left ${ukraineStory.biasDistribution.left}%"></div>
-                <div class="gn-seg gn-seg-center" style="width:${ukraineStory.biasDistribution.center}%" title="Center ${ukraineStory.biasDistribution.center}%"></div>
-                <div class="gn-seg gn-seg-right"  style="width:${ukraineStory.biasDistribution.right}%"  title="Right ${ukraineStory.biasDistribution.right}%"></div>
-              </div>
-              <div class="briefing-sources-count-line">
-                <span class="src-count-num">${ukraineStory.sourceCount} sources</span>
-                <span class="src-dot-sep">·</span>
-                <span class="src-lean-info">${ukraineStory.biasDistribution.left}% from Left</span>
-              </div>
-            </div>
+            <p class="briefing-card-snippet">${ukraineStory.neutralSummary}</p>
+
+            <p class="briefing-card-links">+ <a data-action="open-modal" data-story-id="${subStory1.id}">${shortTitle(subStory1.title)}</a>; <a data-action="open-modal" data-story-id="${subStory2.id}">${shortTitle(subStory2.title)}</a>; <a data-action="open-modal" data-story-id="${sfStory.id}">${shortTitle(sfStory.title)}</a>; and more.</p>
+          </div>
+          </div>
+
+          <!-- Top News Stories list inside the left briefing column -->
+          <h2 class="gn-main-section-heading tn-col-heading">Top News Stories</h2>
+          <div class="tn-col-list">
+            ${mainFeedStories.slice(0, 5).map(story => renderStoryCard(story)).join('')}
           </div>
         </div>
 
@@ -160,20 +165,15 @@ function renderHomeFeed(stories) {
           <div class="briefing-hero-card briefing-interactive-card" data-action="open-modal" data-story-id="${trumpStory.id}">
             <div class="briefing-hero-img-wrap">
               <img src="${trumpStory.heroImage}" alt="${trumpStory.title}" loading="lazy" />
+              <span class="hero-info-icon" title="About this coverage">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              </span>
               <div class="briefing-hero-overlay">
-                <span class="hero-cat-tag">${trumpStory.category}</span>
                 <h2 class="briefing-hero-headline">${trumpStory.title}</h2>
-                <div class="briefing-hero-bias-row">
-                  <div class="gn-bias-strip">
-                    <div class="gn-seg gn-seg-left"   style="width:${trumpStory.biasDistribution.left}%"   title="Left ${trumpStory.biasDistribution.left}%"></div>
-                    <div class="gn-seg gn-seg-center" style="width:${trumpStory.biasDistribution.center}%" title="Center ${trumpStory.biasDistribution.center}%"></div>
-                    <div class="gn-seg gn-seg-right"  style="width:${trumpStory.biasDistribution.right}%"  title="Right ${trumpStory.biasDistribution.right}%"></div>
-                  </div>
-                  <div class="briefing-hero-meta-line">
-                    <span>${trumpStory.sourceCount} sources</span>
-                    <span>·</span>
-                    <span>${trumpStory.biasDistribution.right}% Right lean</span>
-                  </div>
+                <div class="gn-bias-strip labeled lg">
+                  <div class="gn-seg gn-seg-left"   style="width:${trumpStory.biasDistribution.left}%"><span>L ${trumpStory.biasDistribution.left}%</span></div>
+                  <div class="gn-seg gn-seg-center" style="width:${trumpStory.biasDistribution.center}%"><span>Center ${trumpStory.biasDistribution.center}%</span></div>
+                  <div class="gn-seg gn-seg-right"  style="width:${trumpStory.biasDistribution.right}%"><span>Right ${trumpStory.biasDistribution.right}%</span></div>
                 </div>
               </div>
             </div>
@@ -181,37 +181,28 @@ function renderHomeFeed(stories) {
 
           <!-- Two Stacked News Items Directly Below Hero -->
           <div class="briefing-sub-items">
-            <!-- Sub item 1: Trump Tax Plan -->
-            <div class="briefing-sub-item briefing-interactive-card" data-action="open-modal" data-story-id="${subStory1.id}">
-              <div class="sub-item-text">
-                <h4 class="sub-item-title">${subStory1.title}</h4>
-                <div class="sub-item-meta">
-                  <div class="gn-bias-strip mini">
-                    <div class="gn-seg gn-seg-left"   style="width:${subStory1.biasDistribution.left}%"></div>
-                    <div class="gn-seg gn-seg-center" style="width:${subStory1.biasDistribution.center}%"></div>
-                    <div class="gn-seg gn-seg-right"  style="width:${subStory1.biasDistribution.right}%"></div>
+            ${[subStory1, subStory2, gazaStory, nhlStory].map(s => {
+              const dist = s.biasDistribution;
+              const leanEntry = Object.entries(dist).sort((a, b) => b[1] - a[1])[0];
+              const leanName = leanEntry[0] === 'left' ? 'Left' : leanEntry[0] === 'right' ? 'Right' : 'Center';
+              const loc = storyLocationMap[s.id] || 'United States';
+              return `
+              <div class="briefing-sub-item briefing-interactive-card" data-action="open-modal" data-story-id="${s.id}">
+                <div class="sub-item-text">
+                  <span class="local-row-meta">${s.category} &middot; ${loc}</span>
+                  <h4 class="sub-item-title">${s.title}</h4>
+                  <div class="sub-item-meta">
+                    <div class="gn-bias-strip mini">
+                      <div class="gn-seg gn-seg-left"   style="width:${dist.left}%"></div>
+                      <div class="gn-seg gn-seg-center" style="width:${dist.center}%"></div>
+                      <div class="gn-seg gn-seg-right"  style="width:${dist.right}%"></div>
+                    </div>
+                    <span class="sub-src-count"><strong>${leanEntry[1]}%</strong> ${leanName} coverage: ${s.sourceCount} sources</span>
                   </div>
-                  <span class="sub-src-count">${subStory1.sourceCount} sources</span>
                 </div>
-              </div>
-              <img class="sub-item-thumb" src="${subStory1.heroImage}" alt="" loading="lazy" />
-            </div>
-
-            <!-- Sub item 2: Metro Gunman -->
-            <div class="briefing-sub-item briefing-interactive-card" data-action="open-modal" data-story-id="${subStory2.id}">
-              <div class="sub-item-text">
-                <h4 class="sub-item-title">${subStory2.title}</h4>
-                <div class="sub-item-meta">
-                  <div class="gn-bias-strip mini">
-                    <div class="gn-seg gn-seg-left"   style="width:${subStory2.biasDistribution.left}%"></div>
-                    <div class="gn-seg gn-seg-center" style="width:${subStory2.biasDistribution.center}%"></div>
-                    <div class="gn-seg gn-seg-right"  style="width:${subStory2.biasDistribution.right}%"></div>
-                  </div>
-                  <span class="sub-src-count">${subStory2.sourceCount} sources</span>
-                </div>
-              </div>
-              <img class="sub-item-thumb" src="${subStory2.heroImage}" alt="" loading="lazy" />
-            </div>
+                <img class="sub-item-thumb" src="${s.heroImage}" alt="" loading="lazy" />
+              </div>`;
+            }).join('')}
           </div>
         </div>
 
@@ -219,13 +210,12 @@ function renderHomeFeed(stories) {
         <div class="briefing-col-blindspot">
           <div class="blindspot-col-header">
             <div class="blindspot-brand-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
+              <svg width="20" height="14" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="8" cy="7" r="5.5"></circle><circle cx="18" cy="7" r="5.5"></circle>
               </svg>
-              <span>BLINDSPOT™</span>
+              <span>BLINDSPOT&trade;</span>
             </div>
-            <p class="blindspot-col-subtitle">News stories from the left, center, or right that are getting significantly less coverage from the other side.</p>
+            <p class="blindspot-col-subtitle">Stories disproportionately covered by one side of the political spectrum. <a class="blindspot-learn-link" data-action="navigate-view" data-view="blindspots">Learn more about political bias in news coverage.</a></p>
           </div>
 
           <div class="blindspot-stacked-cards">
@@ -233,23 +223,23 @@ function renderHomeFeed(stories) {
             <div class="blindspot-stack-card briefing-interactive-card" data-action="open-modal" data-story-id="${bsLeft.id}">
               <div class="stack-card-img">
                 <img src="${bsLeft.heroImage}" alt="" loading="lazy" />
-                <span class="media-cam-icon" title="Video coverage available">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18 10.48V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4.48l4 3.98v-11l-4 3.98z"/></svg>
+                <span class="hero-info-icon" title="About this coverage">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                 </span>
-                <span class="stack-blindspot-badge badge-left-blind">Left Blindspot</span>
               </div>
               <div class="stack-card-body">
+                <div class="bs-coverage-meta">
+                  <svg class="bs-circles-icon" width="20" height="12" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="7" r="5.5"></circle><circle cx="18" cy="7" r="5.5"></circle></svg>
+                  <span class="bs-coverage-text ${bsLeft.blindspotType === 'left' ? 'left' : 'right'}">Low coverage from ${bsLeft.blindspotType === 'left' ? 'Left' : 'Right'} Sources</span>
+                  <span class="bs-meta-sep">&middot;</span>
+                  <span class="bs-time">11h ago</span>
+                </div>
+                <div class="gn-bias-strip labeled">
+                  <div class="gn-seg gn-seg-left"   style="width:${bsLeft.biasDistribution.left}%"><span>${bsLeft.biasDistribution.left}%</span></div>
+                  <div class="gn-seg gn-seg-center" style="width:${bsLeft.biasDistribution.center}%"><span>Center ${bsLeft.biasDistribution.center}%</span></div>
+                  <div class="gn-seg gn-seg-right"  style="width:${bsLeft.biasDistribution.right}%"><span>Right ${bsLeft.biasDistribution.right}%</span></div>
+                </div>
                 <h4 class="stack-card-headline">${bsLeft.title}</h4>
-                <div class="gn-bias-strip mini">
-                  <div class="gn-seg gn-seg-left"   style="width:${bsLeft.biasDistribution.left}%"></div>
-                  <div class="gn-seg gn-seg-center" style="width:${bsLeft.biasDistribution.center}%"></div>
-                  <div class="gn-seg gn-seg-right"  style="width:${bsLeft.biasDistribution.right}%"></div>
-                </div>
-                <div class="stack-card-meta">
-                  <span class="lean-stat right-heavy">${bsLeft.biasDistribution.right}% Right</span>
-                  <span class="stat-sep">vs</span>
-                  <span class="lean-stat left-light">${bsLeft.biasDistribution.left}% Left</span>
-                </div>
               </div>
             </div>
 
@@ -257,25 +247,41 @@ function renderHomeFeed(stories) {
             <div class="blindspot-stack-card briefing-interactive-card" data-action="open-modal" data-story-id="${bsRight.id}">
               <div class="stack-card-img">
                 <img src="${bsRight.heroImage}" alt="" loading="lazy" />
-                <span class="media-cam-icon" title="Video coverage available">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18 10.48V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4.48l4 3.98v-11l-4 3.98z"/></svg>
+                <span class="hero-info-icon" title="About this coverage">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                 </span>
-                <span class="stack-blindspot-badge badge-right-blind">Right Blindspot</span>
               </div>
               <div class="stack-card-body">
+                <div class="bs-coverage-meta">
+                  <svg class="bs-circles-icon" width="20" height="12" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="7" r="5.5"></circle><circle cx="18" cy="7" r="5.5"></circle></svg>
+                  <span class="bs-coverage-text ${bsRight.blindspotType === 'right' ? 'right' : 'left'}">No coverage from ${bsRight.blindspotType === 'right' ? 'Right' : 'Left'} Sources</span>
+                  <span class="bs-meta-sep">&middot;</span>
+                  <span class="bs-time">21h ago</span>
+                </div>
+                <div class="gn-bias-strip labeled">
+                  <div class="gn-seg gn-seg-left"   style="width:${bsRight.biasDistribution.left}%"><span>${bsRight.biasDistribution.left}%</span></div>
+                  <div class="gn-seg gn-seg-center" style="width:${bsRight.biasDistribution.center}%"><span>Center ${bsRight.biasDistribution.center}%</span></div>
+                  <div class="gn-seg gn-seg-right"  style="width:${bsRight.biasDistribution.right}%"><span>Right ${bsRight.biasDistribution.right}%</span></div>
+                </div>
                 <h4 class="stack-card-headline">${bsRight.title}</h4>
-                <div class="gn-bias-strip mini">
-                  <div class="gn-seg gn-seg-left"   style="width:${bsRight.biasDistribution.left}%"></div>
-                  <div class="gn-seg gn-seg-center" style="width:${bsRight.biasDistribution.center}%"></div>
-                  <div class="gn-seg gn-seg-right"  style="width:${bsRight.biasDistribution.right}%"></div>
-                </div>
-                <div class="stack-card-meta">
-                  <span class="lean-stat left-heavy">${bsRight.biasDistribution.left}% Left</span>
-                  <span class="stat-sep">vs</span>
-                  <span class="lean-stat right-light">${bsRight.biasDistribution.right}% Right</span>
-                </div>
               </div>
             </div>
+          </div>
+
+          <!-- View Blindspot Feed Button -->
+          <button class="bs-view-feed-btn" data-action="navigate-view" data-view="blindspots">View Blindspot Feed</button>
+
+          <!-- My News Bias Widget -->
+          <div class="my-news-bias-widget">
+            <h3 class="mnb-title">My News Bias</h3>
+            <div class="mnb-user-name">Linda B. (Sample user)</div>
+            <div class="mnb-user-stats">0 Stories - 0 Articles</div>
+            <div class="mnb-bias-bar">
+              <div class="mnb-seg mnb-left"><span>?</span></div>
+              <div class="mnb-seg mnb-center"><span>?</span></div>
+              <div class="mnb-seg mnb-right"><span>?</span></div>
+            </div>
+            <button class="mnb-demo-btn" data-action="navigate-view" data-view="diet">See the demo</button>
           </div>
         </div>
 
@@ -283,37 +289,10 @@ function renderHomeFeed(stories) {
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════════
-         SECTION 2: TOP NEWS STORIES (Header, Sub-filter Pills, & Feed)
+         SECTION 2: SIDEBAR WIDGETS (Top stories list now lives in the Daily Briefing left column)
          ══════════════════════════════════════════════════════════════════ -->
-    <div class="gn-feed-section-header">
-      <div class="section-title-wrap">
-        <h2 class="gn-main-section-heading">Top News Stories</h2>
-      </div>
-    </div>
-
-    <!-- HORIZONTAL SUB-FILTER PILLS (Matching Ground News reference) -->
-    <div class="gn-secondary-filter-bar">
-      <div class="filter-pills-track">
-        <button class="gn-pill-chip active">All</button>
-        <button class="gn-pill-chip">Breaking News (1)</button>
-        <button class="gn-pill-chip">Free to Read (10)</button>
-        <button class="gn-pill-chip">Blindspots (4)</button>
-        <button class="gn-pill-chip">Fact Checked</button>
-        <button class="gn-pill-chip">Ground AI</button>
-        <button class="gn-pill-chip">High Reliability</button>
-        <button class="gn-pill-chip">Deep Dives</button>
-      </div>
-    </div>
-
-    <!-- Two-column layout: Main Feed + Sidebar -->
+    <!-- Two-column layout: Sidebar -->
     <div class="gn-homepage-columns">
-
-      <!-- LEFT: Main story feed rows with right thumbnails -->
-      <section class="gn-main-column" aria-label="Top stories feed">
-        <div class="gn-cards-stream">
-          ${mainFeedStories.map(story => renderStoryCard(story)).join('')}
-        </div>
-      </section>
 
       <!-- RIGHT: Ground News Intelligence Sidebar -->
       <aside class="gn-sidebar-column" aria-label="News intelligence widgets">
@@ -324,62 +303,59 @@ function renderHomeFeed(stories) {
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
 
-        <!-- Widget 1: My News Chat (Ground News AI) -->
-        <div class="gn-sidebar-widget widget-news-chat">
-          <div class="chat-widget-header">
-            <div class="chat-title-group">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span class="chat-widget-title">My News Chat</span>
-            </div>
-            <span class="chat-ai-pill">AI</span>
-          </div>
-          <p class="chat-widget-desc">Understand both sides of any news story. Ask any question.</p>
-          
-          <div class="chat-spectrum-meter">
-            <span class="spec-label left">Left</span>
-            <div class="spec-bar">
-              <div class="spec-half left" style="width:50%"></div>
-              <div class="spec-half right" style="width:50%"></div>
-            </div>
-            <span class="spec-label right">Right</span>
-          </div>
-
-          <button class="chat-action-btn" data-action="open-modal" data-story-id="${trumpStory.id}">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-            </svg>
-            Chat with News AI
-          </button>
-        </div>
-
-        <!-- Widget 2: Daily Local News -->
-        <div class="gn-sidebar-widget widget-local-news">
-          <div class="local-news-header">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <span class="local-title">Daily Local News</span>
-          </div>
-          <p class="local-desc">Get stories and local alerts in your neighborhood &amp; country.</p>
-          
-          <div class="local-input-row">
-            <input type="text" class="local-zip-input" placeholder="Enter zip or city..." aria-label="Enter zip code" />
-            <button class="local-submit-btn">Subscribe</button>
-          </div>
-
-          <button class="local-gps-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-            </svg>
-            Use Current Location
-          </button>
-        </div>
-
       </aside>
     </div>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         SECTION 2.5: LOCAL NEWS ROWS + DAILY LOCAL NEWS WIDGET
+         ══════════════════════════════════════════════════════════════════ -->
+    <section class="gn-local-section" aria-label="Local news and Daily Local News">
+      <div class="local-rows-col">
+        ${[
+          { s: NEWS_STORIES.find(x => x.id === 'story-michigan-school-holidays'), loc: 'Dearborn' },
+          { s: NEWS_STORIES.find(x => x.id === 'story-lawsuit-ai-conduct'), loc: 'United States' },
+          { s: NEWS_STORIES.find(x => x.id === 'story-oil-iran-surge'), loc: 'United States' },
+          { s: NEWS_STORIES.find(x => x.id === 'story-hormuz-blockade'), loc: 'United States' }
+        ].filter(item => item.s).map(({ s, loc }) => {
+          const dist = s.biasDistribution;
+          const leanEntry = Object.entries(dist).sort((a, b) => b[1] - a[1])[0];
+          const leanName = leanEntry[0] === 'left' ? 'Left' : leanEntry[0] === 'right' ? 'Right' : 'Center';
+          return `
+          <article class="local-row" data-action="open-modal" data-story-id="${s.id}">
+            <div class="local-row-text">
+              <span class="local-row-meta">${s.category} &middot; ${loc}</span>
+              <h3 class="local-row-headline">${s.title}</h3>
+              <div class="tn-coverage-row">
+                <div class="gn-bias-strip mini">
+                  <div class="gn-seg gn-seg-left"   style="width:${dist.left}%"  title="Left ${dist.left}%"></div>
+                  <div class="gn-seg gn-seg-center" style="width:${dist.center}%" title="Center ${dist.center}%"></div>
+                  <div class="gn-seg gn-seg-right"  style="width:${dist.right}%" title="Right ${dist.right}%"></div>
+                </div>
+                <span class="sub-src-count"><strong>${leanEntry[1]}%</strong> ${leanName} coverage: ${s.sourceCount} sources</span>
+              </div>
+            </div>
+            <img class="local-row-thumb" src="${s.heroImage}" alt="" loading="lazy" />
+          </article>`;
+        }).join('')}
+      </div>
+
+      <!-- Daily Local News Widget -->
+      <aside class="local-news-widget">
+        <h2 class="lnw-title">Daily Local News</h2>
+        <p class="lnw-desc">Discover stories and media bias happening right in your city.</p>
+        <div class="lnw-input-row">
+          <input type="text" class="lnw-city-input" placeholder="Enter your city's name" aria-label="Enter your city's name" />
+          <button class="lnw-submit-btn">Submit</button>
+        </div>
+        <button class="lnw-setloc-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"></path>
+          </svg>
+          Set Location
+        </button>
+      </aside>
+    </section>
 
 
     <!-- ══════════════════════════════════════════════════════════════════
@@ -394,83 +370,96 @@ function renderHomeFeed(stories) {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             Follow
           </button>
-          <button class="spotlight-viewall-btn" data-action="open-modal" data-story-id="${gazaStory.id}">
-            View all (42) <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </button>
+          <button class="spotlight-viewall-btn" data-action="navigate-view" data-view="blindspots">Read More</button>
         </div>
       </div>
 
-      <!-- Top Spotlight 2-column: Big Story on Left, Blindspots & Analysis on Right -->
-      <div class="spotlight-trio-layout">
-        <!-- Left Sub-column: Large Featured Card -->
-        <div class="spotlight-main-featured briefing-interactive-card" data-action="open-modal" data-story-id="${gazaStory.id}">
+      <!-- Reference layout: Big story (left, divider) | Blindspots (right) -->
+      <div class="ig-two-col">
+        <!-- Left: Latest Israel-Gaza News -->
+        <div class="ig-latest-col">
           <span class="spotlight-col-subheading">Latest Israel-Gaza News</span>
-          <div class="spotlight-featured-card">
-            <div class="spotlight-img-wrap">
+          <div class="ig-hero briefing-interactive-card" data-action="open-modal" data-story-id="${gazaStory.id}">
+            <div class="ig-hero-img-wrap">
               <img src="${gazaStory.heroImage}" alt="${gazaStory.title}" loading="lazy" />
-              <div class="spotlight-overlay-meta">
-                <span class="spotlight-src-count">${gazaStory.sourceCount} sources</span>
-              </div>
             </div>
-            <div class="spotlight-card-body">
-              <div class="gn-bias-strip">
-                <div class="gn-seg gn-seg-left"   style="width:${gazaStory.biasDistribution.left}%"></div>
-                <div class="gn-seg gn-seg-center" style="width:${gazaStory.biasDistribution.center}%"></div>
-                <div class="gn-seg gn-seg-right"  style="width:${gazaStory.biasDistribution.right}%"></div>
-              </div>
-              <h3 class="spotlight-card-headline">${gazaStory.title}</h3>
-              <p class="spotlight-card-desc">${gazaStory.neutralSummary.slice(0, 140)}…</p>
+            <div class="ig-labeled-bar">
+              <span class="ig-seg-label ig-left"  style="width:${gazaStory.biasDistribution.left}%">Left ${gazaStory.biasDistribution.left}%</span>
+              <span class="ig-seg-label ig-center" style="width:${gazaStory.biasDistribution.center}%">Center ${gazaStory.biasDistribution.center}%</span>
+              <span class="ig-seg-label ig-right" style="width:${gazaStory.biasDistribution.right}%">Right ${gazaStory.biasDistribution.right}%</span>
             </div>
+            <h3 class="ig-hero-headline">${gazaStory.title}</h3>
           </div>
         </div>
 
-        <!-- Right Sub-column: 2 Blindspot Cards + On The Ground Box -->
-        <div class="spotlight-side-blindspots">
+        <!-- Right: Israel-Gaza Blindspots -->
+        <div class="ig-blindspot-col">
           <span class="spotlight-col-subheading">Israel-Gaza Blindspots</span>
-          
-          <div class="spotlight-blindspot-cards-row">
-            <!-- Blindspot 1 -->
-            <div class="spotlight-mini-blindspot briefing-interactive-card" data-action="open-modal" data-story-id="${gazaStory.id}">
-              <div class="mini-bs-thumb">
-                <img src="https://images.unsplash.com/photo-1579547621113-e4bb2a08f51a?auto=format&fit=crop&w=400&q=80" alt="" loading="lazy" />
-                <span class="media-cam-icon" title="Video footage available">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18 10.48V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4.48l4 3.98v-11l-4 3.98z"/></svg>
-                </span>
-                <span class="mini-bs-badge left">72% Left Blindspot</span>
+
+          <div class="ig-bs-cards-row">
+            <!-- Blindspot card 1 -->
+            <div class="ig-bs-card briefing-interactive-card" data-action="open-modal" data-story-id="${gazaStory.id}">
+              <div class="ig-bs-img-wrap">
+                <img src="https://images.unsplash.com/photo-1579547621113-e4bb2a08f51a?auto=format&fit=crop&w=600&q=80" alt="" loading="lazy" />
               </div>
-              <h5 class="mini-bs-title">Civilian police prepare to regulate wheat distribution in North Gaza</h5>
-              <div class="gn-bias-strip mini">
-                <div class="gn-seg gn-seg-left" style="width:28%"></div>
-                <div class="gn-seg gn-seg-center" style="width:18%"></div>
-                <div class="gn-seg gn-seg-right" style="width:54%"></div>
+              <div class="ig-bs-body">
+                <div class="ig-bs-meta">
+                  <span class="bs-circles-icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg>
+                  </span>
+                  <span class="ig-bs-no cov-left">No coverage from Left Sources</span>
+                  <span class="ig-bs-time">· 12h ago</span>
+                </div>
+                <div class="ig-labeled-bar two-seg">
+                  <span class="ig-seg-label ig-center" style="width:36%">Center 36%</span>
+                  <span class="ig-seg-label ig-right"  style="width:64%">Right 64%</span>
+                </div>
+                <h5 class="ig-bs-title">Israeli Attacks Kill at Least Four in Gaza</h5>
               </div>
             </div>
 
-            <!-- Blindspot 2 -->
-            <div class="spotlight-mini-blindspot briefing-interactive-card" data-action="open-modal" data-story-id="${gazaStory.id}">
-              <div class="mini-bs-thumb">
-                <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=400&q=80" alt="" loading="lazy" />
+            <!-- Blindspot card 2 (highlighted) -->
+            <div class="ig-bs-card ig-bs-card-hl briefing-interactive-card" data-action="open-modal" data-story-id="${gazaStory.id}">
+              <div class="ig-bs-img-wrap">
+                <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80" alt="" loading="lazy" />
                 <span class="media-cam-icon" title="Video footage available">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18 10.48V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4.48l4 3.98v-11l-4 3.98z"/></svg>
                 </span>
-                <span class="mini-bs-badge right">81% Right Blindspot</span>
               </div>
-              <h5 class="mini-bs-title">Hostage families stage sit-in in Tel Aviv pressing for Cairo compromise</h5>
-              <div class="gn-bias-strip mini">
-                <div class="gn-seg gn-seg-left" style="width:68%"></div>
-                <div class="gn-seg gn-seg-center" style="width:19%"></div>
-                <div class="gn-seg gn-seg-right" style="width:13%"></div>
+              <div class="ig-bs-body">
+                <div class="ig-bs-meta">
+                  <span class="bs-circles-icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg>
+                  </span>
+                  <span class="ig-bs-no cov-right">No coverage from Right Sources</span>
+                  <span class="ig-bs-time">· 5d ago</span>
+                </div>
+                <div class="ig-labeled-bar two-seg">
+                  <span class="ig-seg-label ig-left"   style="width:64%">Left 64%</span>
+                  <span class="ig-seg-label ig-center" style="width:36%">Center 36%</span>
+                </div>
+                <h5 class="ig-bs-title ig-title-underlined">Action needed to ensure groups aren't unduly 'de-banked' over terror risks: report</h5>
+                <div class="ig-bs-factuality">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 5v6c0 5.05 3.41 9.76 8 11 4.59-1.24 8-5.95 8-11V5l-8-3zm-1.1 13.5l-3-3 1.06-1.06 1.94 1.94 4.44-4.44L16.4 10l-5.5 5.5z"/></svg>
+                  <span><strong>100%</strong> of Sources are High Factuality</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- On the Ground Box -->
-          <div class="on-the-ground-box">
-            <div class="otg-text">
-              <h4 class="otg-title">On the Ground</h4>
-              <p class="otg-desc">Get the daily 360-degree briefing on the Israel-Gaza war and what each side is downplaying.</p>
+          <!-- Blindspot signup card -->
+          <div class="ig-signup-card">
+            <div class="ig-signup-brand">
+              <span class="bs-circles-icon lg" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg>
+              </span>
+              <h4>Blindspot</h4>
             </div>
-            <button class="otg-action-btn" data-action="open-modal" data-story-id="${gazaStory.id}">Read analysis</button>
+            <p class="ig-signup-desc">Get the weekly Blindspot report sent to your inbox and stay up to date with your bias blindspot.</p>
+            <form class="ig-signup-form" onsubmit="return false;">
+              <input type="email" class="ig-signup-input" placeholder="Email address" aria-label="Email address" />
+              <button type="submit" class="ig-signup-btn">Subscribe</button>
+            </form>
           </div>
         </div>
       </div>
