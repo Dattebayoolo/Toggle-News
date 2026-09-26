@@ -1,0 +1,4238 @@
+/*!
+ * Toggle UI Library v1.0.0
+ * Modern Material 3 inspired toggle & switch UI system
+ * https://github.com/Dattebayoolo/Toggle-Ui-Library
+ * MIT License
+ */
+
+/* === Material 3 Design Tokens === */
+:root {
+  /* Google Material You (M3) Color System - Default: Google Blue */
+  --md-primary-h: 217;
+  --md-primary-s: 89%;
+  --md-primary-l: 45%;
+
+  --md-sys-color-primary: hsl(var(--md-primary-h), var(--md-primary-s), var(--md-primary-l));
+  --md-sys-color-primary-hover: hsl(var(--md-primary-h), var(--md-primary-s), 40%);
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: hsl(var(--md-primary-h), 85%, 92%);
+  --md-sys-color-on-primary-container: hsl(var(--md-primary-h), 90%, 18%);
+
+  /* Google Brand Accents */
+  --google-blue: #4285f4;
+  --google-red: #ea4335;
+  --google-yellow: #fbbc05;
+  --google-green: #34a853;
+
+  /* Surfaces & Backgrounds - Light */
+  --md-sys-color-surface: #ffffff;
+  --md-sys-color-surface-dim: #f8f9fa;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f7f9fc;
+  --md-sys-color-surface-container: #edf2f7;
+  --md-sys-color-surface-container-high: #e3e8ee;
+  --md-sys-color-surface-container-highest: #dbe0e6;
+  
+  --md-sys-color-on-surface: #1f1f1f;
+  --md-sys-color-on-surface-variant: #444746;
+  --md-sys-color-outline: #74777f;
+  --md-sys-color-outline-variant: #c4c7c5;
+  --md-sys-color-card-border: rgba(0, 0, 0, 0.08);
+
+  /* Shadows - Material Design 3 elevation */
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 3px 1px rgba(0, 0, 0, 0.04);
+  --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --elevation-3: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --elevation-4: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+  --elevation-5: 0 16px 36px rgba(0, 0, 0, 0.16), 0 6px 12px rgba(0, 0, 0, 0.08);
+
+  /* Radii - Google Pill & Rounded Corners */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-family: 'Outfit', 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.2, 0, 0, 1);
+  --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-slow: 500ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Dark Theme - Google / Gemini Dark Palette */
+[data-theme="dark"] {
+  --md-sys-color-primary: hsl(var(--md-primary-h), 85%, 68%);
+  --md-sys-color-primary-hover: hsl(var(--md-primary-h), 90%, 75%);
+  --md-sys-color-on-primary: #041e49;
+  --md-sys-color-primary-container: hsl(var(--md-primary-h), 80%, 25%);
+  --md-sys-color-on-primary-container: hsl(var(--md-primary-h), 85%, 90%);
+
+  --md-sys-color-surface: #131314;
+  --md-sys-color-surface-dim: #0e0e0f;
+  --md-sys-color-surface-container-lowest: #0c0d0e;
+  --md-sys-color-surface-container-low: #1a1a1c;
+  --md-sys-color-surface-container: #1e1f20;
+  --md-sys-color-surface-container-high: #282a2c;
+  --md-sys-color-surface-container-highest: #333538;
+
+  --md-sys-color-on-surface: #e3e3e3;
+  --md-sys-color-on-surface-variant: #c4c7c5;
+  --md-sys-color-outline: #8e918f;
+  --md-sys-color-outline-variant: #444746;
+  --md-sys-color-card-border: rgba(255, 255, 255, 0.1);
+
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --elevation-2: 0 3px 8px rgba(0, 0, 0, 0.45);
+  --elevation-3: 0 6px 16px rgba(0, 0, 0, 0.55);
+  --elevation-4: 0 10px 28px rgba(0, 0, 0, 0.65);
+  --elevation-5: 0 18px 40px rgba(0, 0, 0, 0.75);
+}
+
+/* === Toggle & Switch Components === */
+/* ==========================================================================
+   TOGGLE UI COMPONENT LIBRARY - STYLESHEET
+   Handcrafted, accessible, CSS-only and interactive toggle switches
+   ========================================================================== */
+
+/* Universal Reset for Toggle Controls */
+.toggle-base {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggle-base input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   1. Google Material Design 3 (M3) Standard Switch
+   Official specs: 52x32mm track, 16px to 24px expanding thumb
+   -------------------------------------------------------------------------- */
+.toggle-m3 {
+  width: 52px;
+  height: 32px;
+}
+
+.toggle-m3 .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background-color: var(--md-sys-color-surface-container-highest);
+  border: 2px solid var(--md-sys-color-outline);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.toggle-m3 .thumb {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background-color: var(--md-sys-color-outline);
+  transition: transform var(--transition-base), width var(--transition-base), height var(--transition-base), top var(--transition-base), left var(--transition-base), background-color var(--transition-base);
+}
+
+.toggle-m3 input:checked + .track {
+  background-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-m3 input:checked + .track .thumb {
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  transform: translateX(20px);
+  background-color: var(--md-sys-color-on-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-m3:hover .thumb {
+  box-shadow: 0 0 0 8px rgba(11, 87, 208, 0.08);
+}
+
+.toggle-m3 input:checked:hover + .track .thumb {
+  box-shadow: 0 0 0 8px rgba(11, 87, 208, 0.16);
+}
+
+/* --------------------------------------------------------------------------
+   2. Google M3 Switch with Animated Icon Thumb
+   Checkmark appears when ON, minus/cross when OFF
+   -------------------------------------------------------------------------- */
+.toggle-m3-icon {
+  width: 52px;
+  height: 32px;
+}
+
+.toggle-m3-icon .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background-color: var(--md-sys-color-surface-container-highest);
+  border: 2px solid var(--md-sys-color-outline);
+  transition: all var(--transition-base);
+}
+
+.toggle-m3-icon .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background-color: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-base), background-color var(--transition-base);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-m3-icon .thumb-icon {
+  font-size: 16px;
+  color: var(--md-sys-color-outline);
+  transition: all var(--transition-base);
+}
+
+.toggle-m3-icon input:checked + .track {
+  background-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-m3-icon input:checked + .track .thumb {
+  transform: translateX(20px);
+  background-color: var(--md-sys-color-on-primary);
+}
+
+.toggle-m3-icon input:checked + .track .thumb-icon {
+  color: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   3. Google Material Ripple Halo Switch
+   Features expansive Material You ripple glow on hover/active
+   -------------------------------------------------------------------------- */
+.toggle-m3-halo {
+  width: 54px;
+  height: 32px;
+}
+
+.toggle-m3-halo .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  transition: all var(--transition-base);
+}
+
+.toggle-m3-halo .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-outline);
+  transition: transform var(--transition-spring), background var(--transition-base);
+}
+
+.toggle-m3-halo .halo {
+  position: absolute;
+  inset: -8px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  pointer-events: none;
+  transition: background var(--transition-fast), transform var(--transition-spring);
+  transform: scale(0.6);
+  opacity: 0;
+}
+
+.toggle-m3-halo:hover .halo {
+  background: var(--md-sys-color-primary);
+  opacity: 0.12;
+  transform: scale(1);
+}
+
+.toggle-m3-halo input:checked + .track {
+  background: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-m3-halo input:checked + .track .thumb {
+  transform: translateX(22px);
+  background: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   4. iOS 18 Liquid Glass Switch
+   Silky smooth bounce, crisp edge and vibrant Apple green
+   -------------------------------------------------------------------------- */
+.toggle-ios {
+  width: 51px;
+  height: 31px;
+}
+
+.toggle-ios .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background-color: #e9e9ea;
+  transition: background-color 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .toggle-ios .track {
+  background-color: #39393d;
+}
+
+.toggle-ios .thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: var(--radius-full);
+  background-color: #ffffff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.16);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-ios input:checked + .track {
+  background-color: #34c759;
+}
+
+.toggle-ios input:checked + .track .thumb {
+  transform: translateX(20px);
+}
+
+.toggle-ios:active .thumb {
+  width: 32px;
+}
+
+.toggle-ios input:checked:active + .track .thumb {
+  transform: translateX(15px);
+}
+
+/* --------------------------------------------------------------------------
+   5. Day to Night Celestial Switch
+   Animated sun, drifting clouds, stars and moon craters
+   -------------------------------------------------------------------------- */
+.toggle-daynight {
+  width: 76px;
+  height: 36px;
+}
+
+.toggle-daynight .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #42a5f5, #29b6f6);
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background 500ms ease;
+}
+
+.toggle-daynight .clouds {
+  position: absolute;
+  bottom: -4px;
+  right: 6px;
+  width: 32px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  box-shadow: -8px 4px 0 -2px rgba(255, 255, 255, 0.5);
+  transition: transform 500ms ease, opacity 400ms ease;
+}
+
+.toggle-daynight .stars {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: all 400ms ease;
+  font-size: 10px;
+  color: #fff6a6;
+  letter-spacing: 5px;
+}
+
+.toggle-daynight .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: #ffca28;
+  box-shadow: 0 0 10px rgba(255, 202, 40, 0.8);
+  transition: transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1), background 400ms ease, box-shadow 400ms ease;
+}
+
+.toggle-daynight .moon-crater {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #b0bec5;
+  border-radius: 50%;
+  top: 6px;
+  left: 12px;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.toggle-daynight input:checked + .track {
+  background: linear-gradient(135deg, #0d1b2a, #1b263b);
+}
+
+.toggle-daynight input:checked + .track .clouds {
+  transform: translateY(25px);
+  opacity: 0;
+}
+
+.toggle-daynight input:checked + .track .stars {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toggle-daynight input:checked + .track .thumb {
+  transform: translateX(40px);
+  background: #eceff1;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.toggle-daynight input:checked + .track .moon-crater {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   6. Elastic Jelly / Spring Switch
+   Thumb squishes and elongates like rubber during motion
+   -------------------------------------------------------------------------- */
+.toggle-squish {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-squish .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-highest);
+  transition: background 300ms ease;
+  border: 2px solid var(--md-sys-color-outline-variant);
+}
+
+.toggle-squish .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-outline);
+  transition: transform 400ms cubic-bezier(0.34, 1.7, 0.64, 1), width 250ms ease, background 300ms ease;
+}
+
+.toggle-squish:active .thumb {
+  width: 32px;
+}
+
+.toggle-squish input:checked + .track {
+  background: var(--md-sys-color-primary-container);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-squish input:checked + .track .thumb {
+  transform: translateX(28px);
+  background: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   7. Cyberpunk Neon Hologram Switch
+   Laser grid, radioactive neon glow, and high-tech status
+   -------------------------------------------------------------------------- */
+.toggle-cyberpunk {
+  width: 68px;
+  height: 34px;
+}
+
+.toggle-cyberpunk .track {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: #0a0b10;
+  border: 1px solid #222938;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
+  transition: all 300ms ease;
+  overflow: hidden;
+}
+
+.toggle-cyberpunk .track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 234, 0.05) 2px, rgba(0, 255, 234, 0.05) 4px);
+  pointer-events: none;
+}
+
+.toggle-cyberpunk .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: #1e2230;
+  border: 1px solid #485269;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 300ms cubic-bezier(0.2, 0.9, 0.3, 1.2), background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+}
+
+.toggle-cyberpunk .neon-bar {
+  width: 4px;
+  height: 14px;
+  background: #5a647d;
+  border-radius: 2px;
+  transition: all 300ms ease;
+}
+
+.toggle-cyberpunk input:checked + .track {
+  border-color: #00ffea;
+  box-shadow: 0 0 14px rgba(0, 255, 234, 0.4), inset 0 0 10px rgba(0, 255, 234, 0.15);
+}
+
+.toggle-cyberpunk input:checked + .track .thumb {
+  transform: translateX(34px);
+  background: #002b28;
+  border-color: #00ffea;
+  box-shadow: 0 0 10px #00ffea;
+}
+
+.toggle-cyberpunk input:checked + .track .neon-bar {
+  background: #00ffea;
+  box-shadow: 0 0 8px #00ffea;
+}
+
+/* --------------------------------------------------------------------------
+   8. Neumorphic Soft Tactile Switch
+   Tactile concave and convex soft shadow morph
+   -------------------------------------------------------------------------- */
+.toggle-neumorphic {
+  width: 64px;
+  height: 34px;
+}
+
+.toggle-neumorphic .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #e2e8f0;
+  box-shadow: inset 3px 3px 6px #cbd5e1, inset -3px -3px 6px #ffffff;
+  transition: all 300ms ease;
+}
+
+[data-theme="dark"] .toggle-neumorphic .track {
+  background: #1e2126;
+  box-shadow: inset 3px 3px 6px #131518, inset -3px -3px 6px #292d34;
+}
+
+.toggle-neumorphic .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #e2e8f0;
+  box-shadow: 3px 3px 6px #cbd5e1, -3px -3px 6px #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease;
+}
+
+[data-theme="dark"] .toggle-neumorphic .thumb {
+  background: #1e2126;
+  box-shadow: 3px 3px 6px #131518, -3px -3px 6px #292d34;
+}
+
+.toggle-neumorphic .led-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+  transition: all 300ms ease;
+}
+
+.toggle-neumorphic input:checked + .track .thumb {
+  transform: translateX(30px);
+}
+
+.toggle-neumorphic input:checked + .track .led-dot {
+  background: #3b82f6;
+  box-shadow: 0 0 8px #3b82f6;
+}
+
+/* --------------------------------------------------------------------------
+   9. Typographic ON / OFF Switch
+   Cut-out typographic sliding letters
+   -------------------------------------------------------------------------- */
+.toggle-typo {
+  width: 72px;
+  height: 34px;
+}
+
+.toggle-typo .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #ffffff;
+  transition: background 300ms ease;
+}
+
+.toggle-typo .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-typo input:checked + .track {
+  background: var(--md-sys-color-primary);
+}
+
+.toggle-typo input:checked + .track .thumb {
+  transform: translateX(38px);
+}
+
+/* --------------------------------------------------------------------------
+   10. Minimalist Swiss Architecture Switch
+   Monochrome, hairline stroke and microscopic indicator dot
+   -------------------------------------------------------------------------- */
+.toggle-minimal {
+  width: 48px;
+  height: 24px;
+}
+
+.toggle-minimal .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--md-sys-color-outline);
+  background: transparent;
+  transition: all 250ms ease;
+}
+
+.toggle-minimal .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-outline);
+  transition: transform 250ms cubic-bezier(0.2, 0, 0, 1), background 250ms ease;
+}
+
+.toggle-minimal input:checked + .track {
+  border-color: var(--md-sys-color-on-surface);
+  background: var(--md-sys-color-on-surface);
+}
+
+.toggle-minimal input:checked + .track .thumb {
+  transform: translateX(24px);
+  background: var(--md-sys-color-surface);
+}
+
+/* --------------------------------------------------------------------------
+   11. Sound Waves Equalizer Switch
+   Equalizer bars dance when active, muted flat line when off
+   -------------------------------------------------------------------------- */
+.toggle-equalizer {
+  width: 66px;
+  height: 34px;
+}
+
+.toggle-equalizer .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-highest);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+  transition: all 300ms ease;
+}
+
+.toggle-equalizer .wave-bars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+}
+
+.toggle-equalizer .bar {
+  width: 2.5px;
+  height: 4px;
+  background: var(--md-sys-color-outline);
+  border-radius: 2px;
+  transition: all 250ms ease;
+}
+
+.toggle-equalizer .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-equalizer input:checked + .track {
+  background: var(--md-sys-color-primary-container);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-equalizer input:checked + .track .thumb {
+  transform: translateX(32px);
+}
+
+.toggle-equalizer input:checked + .track .bar {
+  background: var(--md-sys-color-primary);
+  animation: equalize 0.8s ease-in-out infinite alternate;
+}
+
+.toggle-equalizer input:checked + .track .bar:nth-child(1) { animation-delay: 0.1s; }
+.toggle-equalizer input:checked + .track .bar:nth-child(2) { animation-delay: 0.3s; }
+.toggle-equalizer input:checked + .track .bar:nth-child(3) { animation-delay: 0.5s; }
+.toggle-equalizer input:checked + .track .bar:nth-child(4) { animation-delay: 0.2s; }
+
+@keyframes equalize {
+  0% { height: 4px; }
+  100% { height: 16px; }
+}
+
+/* --------------------------------------------------------------------------
+   12. Password Peek Eye Switch
+   Animated eyelash and open pupil
+   -------------------------------------------------------------------------- */
+.toggle-eye {
+  width: 58px;
+  height: 32px;
+}
+
+.toggle-eye .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  transition: all 300ms ease;
+}
+
+.toggle-eye .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: var(--md-sys-color-outline);
+}
+
+.toggle-eye .thumb .material-symbols-rounded {
+  font-size: 16px;
+  transition: transform 250ms ease;
+}
+
+.toggle-eye input:checked + .track {
+  background: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-eye input:checked + .track .thumb {
+  transform: translateX(26px);
+  color: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   13. Nature Sprout & Bloom Switch
+   Budding seedling sprouting on activation
+   -------------------------------------------------------------------------- */
+.toggle-nature {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-nature .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #d7ccc8;
+  transition: background 350ms ease;
+}
+
+[data-theme="dark"] .toggle-nature .track {
+  background: #3e2723;
+}
+
+.toggle-nature .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #8d6e63;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), background 350ms ease;
+}
+
+.toggle-nature .sprout-icon {
+  font-size: 17px;
+  transform: scale(0.8) rotate(-15deg);
+  transition: transform 350ms ease, color 300ms ease;
+}
+
+.toggle-nature input:checked + .track {
+  background: #c8e6c9;
+}
+
+[data-theme="dark"] .toggle-nature input:checked + .track {
+  background: #1b5e20;
+}
+
+.toggle-nature input:checked + .track .thumb {
+  transform: translateX(28px);
+  background: #2e7d32;
+}
+
+.toggle-nature input:checked + .track .sprout-icon {
+  transform: scale(1.1) rotate(0deg);
+  color: #e8f5e9;
+}
+
+/* --------------------------------------------------------------------------
+   14. Pulsing Power Ring Switch
+   Illuminated power symbol with glowing neon halo
+   -------------------------------------------------------------------------- */
+.toggle-power {
+  width: 62px;
+  height: 34px;
+}
+
+.toggle-power .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #212529;
+  border: 1px solid #343a40;
+  transition: all 300ms ease;
+}
+
+.toggle-power .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #343a40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #adb5bd;
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), all 300ms ease;
+}
+
+.toggle-power .power-icon {
+  font-size: 16px;
+}
+
+.toggle-power input:checked + .track {
+  border-color: #0d6efd;
+  box-shadow: 0 0 12px rgba(13, 110, 253, 0.4);
+}
+
+.toggle-power input:checked + .track .thumb {
+  transform: translateX(28px);
+  background: #0d6efd;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(13, 110, 253, 0.8);
+}
+
+/* --------------------------------------------------------------------------
+   15. 8-Bit Retro Arcade Switch
+   Chunky pixelated borders and nostalgic arcade colors
+   -------------------------------------------------------------------------- */
+.toggle-pixel {
+  width: 62px;
+  height: 32px;
+}
+
+.toggle-pixel .track {
+  position: absolute;
+  inset: 0;
+  background: #474747;
+  border: 3px solid #000;
+  box-shadow: inset -2px -2px 0 0 #2b2b2b, inset 2px 2px 0 0 #707070;
+  transition: all 150ms steps(3);
+}
+
+.toggle-pixel .thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  background: #dc2626;
+  border: 2px solid #000;
+  box-shadow: inset -2px -2px 0 0 #991b1b, inset 2px 2px 0 0 #f87171;
+  transition: transform 150ms steps(4);
+}
+
+.toggle-pixel input:checked + .track {
+  background: #16a34a;
+  box-shadow: inset -2px -2px 0 0 #15803d, inset 2px 2px 0 0 #4ade80;
+}
+
+.toggle-pixel input:checked + .track .thumb {
+  transform: translateX(30px);
+  background: #facc15;
+  box-shadow: inset -2px -2px 0 0 #ca8a04, inset 2px 2px 0 0 #fde047;
+}
+
+/* --------------------------------------------------------------------------
+   16. Heart / Like Micro-interaction Switch
+   Bursting heart with floating heart particles
+   -------------------------------------------------------------------------- */
+.toggle-heart {
+  width: 58px;
+  height: 32px;
+}
+
+.toggle-heart .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  transition: all 300ms ease;
+}
+
+.toggle-heart .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease;
+}
+
+.toggle-heart .thumb .material-symbols-rounded {
+  font-size: 16px;
+  transition: transform 250ms ease, color 250ms ease;
+}
+
+.toggle-heart input:checked + .track {
+  background: #ffe4e6;
+  border-color: #f43f5e;
+}
+
+[data-theme="dark"] .toggle-heart input:checked + .track {
+  background: #4c0519;
+}
+
+.toggle-heart input:checked + .track .thumb {
+  transform: translateX(26px);
+  background: #f43f5e;
+  color: #ffffff;
+}
+
+.toggle-heart input:checked + .track .thumb .material-symbols-rounded {
+  font-variation-settings: 'FILL' 1;
+  animation: heartPop 400ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes heartPop {
+  0% { transform: scale(0.6); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* --------------------------------------------------------------------------
+   17. 3-Way Tri-State Segmented Toggle (Off - Auto - On)
+   Sliding indicator over segmented options
+   -------------------------------------------------------------------------- */
+.toggle-segmented {
+  position: relative;
+  display: inline-flex;
+  background: var(--md-sys-color-surface-container-high);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 2px;
+  user-select: none;
+}
+
+.toggle-segmented input[type="radio"] {
+  display: none;
+}
+
+.toggle-segmented label {
+  position: relative;
+  z-index: 2;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface-variant);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.toggle-segmented input:checked + label {
+  color: var(--md-sys-color-on-primary);
+  background: var(--md-sys-color-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* --------------------------------------------------------------------------
+   18. 3D Tumbler Flip Switch
+   Physical rocker switch tilting in 3D perspective
+   -------------------------------------------------------------------------- */
+.toggle-3d {
+  width: 62px;
+  height: 34px;
+  perspective: 200px;
+}
+
+.toggle-3d .rocker {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(to bottom, #d1d5db, #9ca3af);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6), 0 3px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #4b5563;
+  transform: rotateX(15deg);
+  transform-origin: center bottom;
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.4, 1), background 300ms ease;
+}
+
+.toggle-3d input:checked + .rocker {
+  transform: rotateX(-15deg);
+  background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+  color: #ffffff;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), 0 3px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   19. Space Rocket Thruster Switch
+   Rocket ships with flame particle trails
+   -------------------------------------------------------------------------- */
+.toggle-rocket {
+  width: 68px;
+  height: 34px;
+}
+
+.toggle-rocket .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #1e1b4b;
+  border: 1px solid #312e81;
+  overflow: hidden;
+  transition: all 300ms ease;
+}
+
+.toggle-rocket .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4338ca;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-rocket .rocket-icon {
+  font-size: 18px;
+  transform: rotate(45deg);
+  transition: transform 300ms ease;
+}
+
+.toggle-rocket input:checked + .track {
+  background: #0f172a;
+  border-color: #f97316;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+}
+
+.toggle-rocket input:checked + .track .thumb {
+  transform: translateX(34px);
+  background: #f97316;
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   20. Lock / Unlock Security Switch
+   Padlock unlatches and pops open
+   -------------------------------------------------------------------------- */
+.toggle-lock {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-lock .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  transition: all 300ms ease;
+}
+
+.toggle-lock .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-outline);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease, color 300ms ease;
+}
+
+.toggle-lock .thumb .material-symbols-rounded {
+  font-size: 16px;
+}
+
+.toggle-lock input:checked + .track {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.toggle-lock input:checked + .track .thumb {
+  transform: translateX(28px);
+  color: #10b981;
+}
+
+/* --------------------------------------------------------------------------
+   21. Wifi Signal Broadcast Switch
+   Radiating signal waves
+   -------------------------------------------------------------------------- */
+.toggle-wifi {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-wifi .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  transition: all 300ms ease;
+}
+
+.toggle-wifi .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-outline);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), color 300ms ease;
+}
+
+.toggle-wifi .thumb .material-symbols-rounded {
+  font-size: 16px;
+}
+
+.toggle-wifi input:checked + .track {
+  background: var(--google-blue);
+  border-color: var(--google-blue);
+}
+
+.toggle-wifi input:checked + .track .thumb {
+  transform: translateX(28px);
+  color: var(--google-blue);
+}
+
+/* --------------------------------------------------------------------------
+   22. Bouncy Glass Marble Switch
+   Refraction and physics bounce
+   -------------------------------------------------------------------------- */
+.toggle-marble {
+  width: 62px;
+  height: 32px;
+}
+
+.toggle-marble .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #cbd5e1;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background 350ms ease;
+}
+
+[data-theme="dark"] .toggle-marble .track {
+  background: #334155;
+}
+
+.toggle-marble .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #94a3b8 70%, #64748b 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: transform 450ms cubic-bezier(0.34, 1.7, 0.64, 1);
+}
+
+.toggle-marble input:checked + .track {
+  background: #93c5fd;
+}
+
+[data-theme="dark"] .toggle-marble input:checked + .track {
+  background: #1e3a8a;
+}
+
+.toggle-marble input:checked + .track .thumb {
+  transform: translateX(30px);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #60a5fa 70%, #2563eb 100%);
+}
+
+/* --------------------------------------------------------------------------
+   23. Rainbow Holographic Shift Switch
+   Flowing spectrum iridescent gradient
+   -------------------------------------------------------------------------- */
+.toggle-gradient {
+  width: 64px;
+  height: 34px;
+}
+
+.toggle-gradient .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #a855f7, #ec4899, #f97316);
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.25);
+  transition: background-position 500ms ease;
+}
+
+.toggle-gradient .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-gradient input:checked + .track {
+  background-position: 100% 50%;
+  box-shadow: 0 3px 12px rgba(249, 115, 22, 0.4);
+}
+
+.toggle-gradient input:checked + .track .thumb {
+  transform: translateX(30px);
+}
+
+/* --------------------------------------------------------------------------
+   24. Steaming Hot Coffee Switch
+   Cold empty cup to steaming warm coffee
+   -------------------------------------------------------------------------- */
+.toggle-coffee {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-coffee .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #e5e7eb;
+  transition: background 300ms ease;
+}
+
+[data-theme="dark"] .toggle-coffee .track {
+  background: #374151;
+}
+
+.toggle-coffee .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease;
+}
+
+.toggle-coffee .thumb .material-symbols-rounded {
+  font-size: 16px;
+}
+
+.toggle-coffee input:checked + .track {
+  background: #fde68a;
+}
+
+[data-theme="dark"] .toggle-coffee input:checked + .track {
+  background: #78350f;
+}
+
+.toggle-coffee input:checked + .track .thumb {
+  transform: translateX(28px);
+  background: #b45309;
+}
+
+/* --------------------------------------------------------------------------
+   25. Google Workspace Theme Switcher
+   Google Dark/Light mode switch
+   -------------------------------------------------------------------------- */
+.toggle-workspace {
+  width: 58px;
+  height: 32px;
+}
+
+.toggle-workspace .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #f1f3f4;
+  border: 1px solid #dadce0;
+  transition: all 300ms ease;
+}
+
+[data-theme="dark"] .toggle-workspace .track {
+  background: #303134;
+  border-color: #5f6368;
+}
+
+.toggle-workspace .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ea4335;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease, color 300ms ease;
+}
+
+.toggle-workspace .thumb .material-symbols-rounded {
+  font-size: 16px;
+  transition: transform 400ms ease;
+}
+
+.toggle-workspace input:checked + .track {
+  background: #202124;
+  border-color: #5f6368;
+}
+
+.toggle-workspace input:checked + .track .thumb {
+  transform: translateX(26px);
+  background: #3c4043;
+  color: #8ab4f8;
+}
+
+.toggle-workspace input:checked + .track .thumb .material-symbols-rounded {
+  transform: rotate(360deg);
+}
+
+/* --------------------------------------------------------------------------
+   26. Tactile Thumb Slider Switch
+   Grip ridges and tactile surface
+   -------------------------------------------------------------------------- */
+.toggle-tactile {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-tactile .track {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: #e2e8f0;
+  border: 2px solid #cbd5e1;
+  transition: all 250ms ease;
+}
+
+[data-theme="dark"] .toggle-tactile .track {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.toggle-tactile .thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: transform 300ms cubic-bezier(0.2, 0, 0, 1), background 250ms ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-tactile .ridge {
+  width: 2px;
+  height: 12px;
+  background: #94a3b8;
+  border-radius: 1px;
+}
+
+.toggle-tactile input:checked + .track {
+  background: var(--md-sys-color-primary-container);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-tactile input:checked + .track .thumb {
+  transform: translateX(28px);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-tactile input:checked + .track .ridge {
+  background: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   27. Morphing Checkmark / Cross Button
+   Pill switch with spinning morphing status icon
+   -------------------------------------------------------------------------- */
+.toggle-morph {
+  width: 64px;
+  height: 34px;
+}
+
+.toggle-morph .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-highest);
+  transition: background 300ms ease;
+}
+
+.toggle-morph .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease;
+  color: var(--md-sys-color-outline);
+}
+
+.toggle-morph .thumb .material-symbols-rounded {
+  font-size: 16px;
+  transition: transform 350ms ease, opacity 200ms ease;
+}
+
+.toggle-morph input:checked + .track {
+  background: var(--md-sys-color-primary);
+}
+
+.toggle-morph input:checked + .track .thumb {
+  transform: translateX(30px);
+  color: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   28. Fluid Lava Blob Switch
+   Smooth morphing liquid bubble feel
+   -------------------------------------------------------------------------- */
+.toggle-lava {
+  width: 64px;
+  height: 32px;
+}
+
+.toggle-lava .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #cbd5e1;
+  transition: background 400ms ease;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .toggle-lava .track {
+  background: #334155;
+}
+
+.toggle-lava .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50% 45% 50% 45%;
+  background: #64748b;
+  transition: transform 500ms cubic-bezier(0.68, -0.55, 0.27, 1.55), border-radius 400ms ease, background 400ms ease;
+}
+
+.toggle-lava input:checked + .track {
+  background: #fed7aa;
+}
+
+[data-theme="dark"] .toggle-lava input:checked + .track {
+  background: #7c2d12;
+}
+
+.toggle-lava input:checked + .track .thumb {
+  transform: translateX(32px);
+  border-radius: 45% 50% 45% 50%;
+  background: #ea580c;
+}
+
+/* === UI Component Library === */
+/* ==========================================================================
+   TOGGLE DESIGN SYSTEM - COMPLETE COMPONENT SUITE
+   Google Material You (M3) Official Component Specs
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. BUTTONS & FLOATING ACTION BUTTONS (FAB)
+   -------------------------------------------------------------------------- */
+.toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 24px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-family);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.toggle-btn .material-symbols-rounded {
+  font-size: 18px;
+}
+
+/* Filled Button (High emphasis) */
+.toggle-btn-filled {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  box-shadow: var(--elevation-1);
+}
+.toggle-btn-filled:hover {
+  background-color: var(--md-sys-color-primary-hover);
+  box-shadow: var(--elevation-2);
+  transform: translateY(-1px);
+}
+.toggle-btn-filled:active {
+  transform: translateY(0);
+}
+
+/* Tonal Button (Medium emphasis) */
+.toggle-btn-tonal {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+.toggle-btn-tonal:hover {
+  filter: brightness(0.96);
+  box-shadow: var(--elevation-1);
+}
+
+/* Outlined Button */
+.toggle-btn-outlined {
+  background-color: transparent;
+  border-color: var(--md-sys-color-outline);
+  color: var(--md-sys-color-primary);
+}
+.toggle-btn-outlined:hover {
+  background-color: var(--md-sys-color-primary-container);
+  border-color: var(--md-sys-color-primary);
+}
+
+/* Text Button (Low emphasis) */
+.toggle-btn-text {
+  background-color: transparent;
+  color: var(--md-sys-color-primary);
+  padding: 0 16px;
+}
+.toggle-btn-text:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+/* Elevated Button */
+.toggle-btn-elevated {
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-primary);
+  box-shadow: var(--elevation-1);
+  border: 1px solid var(--md-sys-color-card-border);
+}
+.toggle-btn-elevated:hover {
+  box-shadow: var(--elevation-2);
+  background-color: var(--md-sys-color-surface-container-low);
+}
+
+/* Floating Action Button (FAB) */
+.toggle-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  box-shadow: var(--elevation-3);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-spring);
+}
+.toggle-fab:hover {
+  box-shadow: var(--elevation-4);
+  transform: scale(1.05);
+}
+.toggle-fab .material-symbols-rounded {
+  font-size: 24px;
+}
+
+/* Extended FAB */
+.toggle-fab-extended {
+  height: 56px;
+  padding: 0 20px;
+  border-radius: var(--radius-lg);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  box-shadow: var(--elevation-3);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-spring);
+}
+.toggle-fab-extended:hover {
+  box-shadow: var(--elevation-4);
+  transform: translateY(-2px);
+}
+
+/* Segmented Button Group */
+.toggle-segmented-btn-group {
+  display: inline-flex;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--md-sys-color-surface);
+}
+.toggle-seg-btn {
+  padding: 8px 18px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+  border-right: 1px solid var(--md-sys-color-outline-variant);
+}
+.toggle-seg-btn:last-child {
+  border-right: none;
+}
+.toggle-seg-btn:hover {
+  background-color: var(--md-sys-color-surface-container);
+}
+.toggle-seg-btn.active {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+/* --------------------------------------------------------------------------
+   2. CHECKBOXES & RADIO BUTTONS
+   -------------------------------------------------------------------------- */
+.toggle-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  user-select: none;
+}
+.toggle-checkbox-label input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-checkbox-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid var(--md-sys-color-outline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  background-color: var(--md-sys-color-surface);
+}
+.toggle-checkbox-label input:checked + .toggle-checkbox-box {
+  background-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+.toggle-checkbox-box .material-symbols-rounded {
+  font-size: 16px;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all var(--transition-spring);
+}
+.toggle-checkbox-label input:checked + .toggle-checkbox-box .material-symbols-rounded {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Radio Button */
+.toggle-radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  user-select: none;
+}
+.toggle-radio-label input {
+  position: absolute;
+  opacity: 0;
+}
+.toggle-radio-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--md-sys-color-outline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.toggle-radio-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--md-sys-color-primary);
+  transform: scale(0);
+  transition: transform var(--transition-spring);
+}
+.toggle-radio-label input:checked + .toggle-radio-circle {
+  border-color: var(--md-sys-color-primary);
+}
+.toggle-radio-label input:checked + .toggle-radio-circle .toggle-radio-inner {
+  transform: scale(1);
+}
+
+/* --------------------------------------------------------------------------
+   3. TEXT FIELDS & INPUTS (Material You Floating Outlined)
+   -------------------------------------------------------------------------- */
+.toggle-textfield {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 380px;
+}
+.toggle-textfield input {
+  width: 100%;
+  height: 54px;
+  padding: 16px 16px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--md-sys-color-outline);
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--md-sys-color-on-surface);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.toggle-textfield input:focus {
+  border-color: var(--md-sys-color-primary);
+  border-width: 2px;
+  box-shadow: 0 0 0 1px var(--md-sys-color-primary);
+}
+.toggle-textfield label {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  font-size: 0.95rem;
+  color: var(--md-sys-color-outline);
+  pointer-events: none;
+  transition: all var(--transition-fast);
+}
+.toggle-textfield input:focus ~ label,
+.toggle-textfield input:not(:placeholder-shown) ~ label {
+  top: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--md-sys-color-primary);
+}
+.toggle-textfield-hint {
+  font-size: 0.75rem;
+  color: var(--md-sys-color-outline);
+  margin-top: 4px;
+  padding-left: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   4. CHIPS & BADGES
+   -------------------------------------------------------------------------- */
+.toggle-chip-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.toggle-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--transition-fast);
+}
+.toggle-chip .material-symbols-rounded {
+  font-size: 16px;
+}
+.toggle-chip:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+.toggle-chip.active {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-color: transparent;
+}
+
+/* Status Notification Badge */
+.toggle-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.toggle-badge-primary {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+.toggle-badge-success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+.toggle-badge-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+.toggle-badge-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* --------------------------------------------------------------------------
+   5. PROGRESS INDICATORS (Linear & Google 4-Color Circular)
+   -------------------------------------------------------------------------- */
+.toggle-linear-progress {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--md-sys-color-surface-container-highest);
+  overflow: hidden;
+  position: relative;
+}
+.toggle-linear-progress-bar {
+  height: 100%;
+  background-color: var(--md-sys-color-primary);
+  width: 60%;
+  border-radius: 2px;
+  transition: width var(--transition-base);
+}
+.toggle-linear-progress.indeterminate .toggle-linear-progress-bar {
+  width: 40%;
+  position: absolute;
+  animation: m3ProgressIndeterminate 1.6s infinite ease-in-out;
+}
+@keyframes m3ProgressIndeterminate {
+  0% { left: -40%; width: 40%; }
+  50% { left: 40%; width: 50%; }
+  100% { left: 100%; width: 30%; }
+}
+
+/* Google Multi-Color Circular Spinner */
+.toggle-google-spinner {
+  width: 40px;
+  height: 40px;
+  animation: spinnerRotate 2s linear infinite;
+}
+.toggle-google-spinner circle {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  animation: spinnerDash 1.5s ease-in-out infinite, spinnerColor 6s ease-in-out infinite;
+}
+@keyframes spinnerRotate {
+  100% { transform: rotate(360deg); }
+}
+@keyframes spinnerDash {
+  0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+  50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+  100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+}
+@keyframes spinnerColor {
+  0%, 100% { stroke: var(--google-blue); }
+  25% { stroke: var(--google-red); }
+  50% { stroke: var(--google-yellow); }
+  75% { stroke: var(--google-green); }
+}
+
+/* --------------------------------------------------------------------------
+   6. SLIDERS & RANGE CONTROLS
+   -------------------------------------------------------------------------- */
+.toggle-slider-wrap {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toggle-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-highest);
+  outline: none;
+  position: relative;
+}
+.toggle-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background-color: var(--md-sys-color-primary);
+  border: 4px solid var(--md-sys-color-surface);
+  box-shadow: var(--elevation-1);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.toggle-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 8px rgba(11, 87, 208, 0.12);
+}
+
+/* --------------------------------------------------------------------------
+   7. CARDS & BENTO SURFACES
+   -------------------------------------------------------------------------- */
+.m3-card {
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+.m3-card-elevated {
+  background-color: var(--md-sys-color-surface-container-low);
+  box-shadow: var(--elevation-1);
+  border: 1px solid var(--md-sys-color-card-border);
+}
+.m3-card-elevated:hover {
+  box-shadow: var(--elevation-3);
+  transform: translateY(-2px);
+}
+.m3-card-filled {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+.m3-card-outlined {
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* --------------------------------------------------------------------------
+   8. NAVIGATION PILLS & TABS
+   -------------------------------------------------------------------------- */
+.toggle-tabs {
+  display: inline-flex;
+  border-bottom: 1px solid var(--md-sys-color-card-border);
+  gap: 16px;
+  width: 100%;
+}
+.toggle-tab-item {
+  padding: 12px 18px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--md-sys-color-outline);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color var(--transition-fast);
+}
+.toggle-tab-item .material-symbols-rounded {
+  font-size: 18px;
+}
+.toggle-tab-item:hover {
+  color: var(--md-sys-color-on-surface);
+}
+.toggle-tab-item.active {
+  color: var(--md-sys-color-primary);
+}
+.toggle-tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background-color: var(--md-sys-color-primary);
+}
+
+/* Navigation Rail Item */
+.toggle-rail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+}
+.toggle-rail-indicator {
+  width: 56px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-fast);
+}
+.toggle-rail-item:hover .toggle-rail-indicator {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+.toggle-rail-item.active .toggle-rail-indicator {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+/* --------------------------------------------------------------------------
+   9. MATERIAL INK RIPPLE EFFECT
+   -------------------------------------------------------------------------- */
+.md-ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.md-ripple-wave {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.16;
+  pointer-events: none;
+  transform: scale(0);
+  animation: mdRippleEffect 550ms cubic-bezier(0.1, 0, 0, 1) forwards;
+}
+
+@keyframes mdRippleEffect {
+  to {
+    transform: scale(3.5);
+    opacity: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. AVATARS & USER PRESENCE
+   -------------------------------------------------------------------------- */
+.toggle-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-weight: 700;
+  font-size: 0.95rem;
+  user-select: none;
+  border: 2px solid var(--md-sys-color-surface);
+  box-shadow: var(--elevation-1);
+}
+
+.toggle-avatar-sm { width: 32px; height: 32px; font-size: 0.8rem; }
+.toggle-avatar-lg { width: 56px; height: 56px; font-size: 1.3rem; }
+
+.toggle-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-full);
+}
+
+.toggle-avatar-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--md-sys-color-surface);
+}
+
+.toggle-avatar-status.online { background-color: var(--google-green); }
+.toggle-avatar-status.busy { background-color: var(--google-red); }
+.toggle-avatar-status.away { background-color: var(--google-yellow); }
+.toggle-avatar-status.offline { background-color: var(--md-sys-color-outline); }
+
+/* Stacked Avatar Group */
+.toggle-avatar-group {
+  display: inline-flex;
+  align-items: center;
+}
+
+.toggle-avatar-group .toggle-avatar {
+  margin-left: -12px;
+  transition: transform var(--transition-fast), z-index var(--transition-fast);
+}
+
+.toggle-avatar-group .toggle-avatar:first-child {
+  margin-left: 0;
+}
+
+.toggle-avatar-group .toggle-avatar:hover {
+  transform: translateY(-4px) scale(1.1);
+  z-index: 10;
+}
+
+/* --------------------------------------------------------------------------
+   11. TOOLTIPS & FLOATING CUES
+   -------------------------------------------------------------------------- */
+.toggle-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.toggle-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background-color: var(--md-sys-color-on-surface);
+  color: var(--md-sys-color-surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: var(--elevation-2);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  z-index: 300;
+}
+
+.toggle-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: var(--md-sys-color-on-surface) transparent transparent transparent;
+}
+
+.toggle-tooltip-wrap:hover .toggle-tooltip,
+.toggle-tooltip-wrap:focus-within .toggle-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* --------------------------------------------------------------------------
+   12. DATA TABLES & DATA MATRICES
+   -------------------------------------------------------------------------- */
+.toggle-table-container {
+  width: 100%;
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-card-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--elevation-1);
+}
+
+.toggle-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.toggle-data-table th {
+  padding: 14px 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--md-sys-color-outline);
+  background-color: var(--md-sys-color-surface-container);
+  border-bottom: 1px solid var(--md-sys-color-card-border);
+}
+
+.toggle-data-table td {
+  padding: 16px 20px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--md-sys-color-card-border);
+  color: var(--md-sys-color-on-surface);
+  transition: background-color var(--transition-fast);
+}
+
+.toggle-data-table tr:hover td {
+  background-color: var(--md-sys-color-surface-container-low);
+}
+
+.toggle-data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.toggle-table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background-color: var(--md-sys-color-surface-container-low);
+  border-top: 1px solid var(--md-sys-color-card-border);
+  font-size: 0.82rem;
+  color: var(--md-sys-color-outline);
+}
+
+/* --------------------------------------------------------------------------
+   13. DIALOGS & OVERLAY SHEETS
+   -------------------------------------------------------------------------- */
+.m3-dialog-card {
+  background-color: var(--md-sys-color-surface);
+  border-radius: var(--radius-2xl);
+  padding: 28px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: var(--elevation-4);
+  border: 1px solid var(--md-sys-color-card-border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.m3-dialog-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.m3-dialog-body {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.m3-dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   14. EXPANSION PANELS & ACCORDIONS (Material 3 Expressive Accordions)
+   -------------------------------------------------------------------------- */
+.toggle-accordion,
+.m3-accordion {
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.toggle-accordion-item,
+.m3-accordion-item {
+  width: 100%;
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-card-border);
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: background-color var(--transition-base, 250ms ease),
+              border-color var(--transition-base, 250ms ease),
+              box-shadow var(--transition-base, 250ms ease);
+}
+
+.toggle-accordion-item:hover,
+.m3-accordion-item:hover {
+  background-color: var(--md-sys-color-surface-container);
+  border-color: var(--md-sys-color-outline-variant);
+}
+
+.toggle-accordion-item.open,
+.m3-accordion-item.open {
+  background-color: var(--md-sys-color-surface-container);
+  border-color: var(--md-sys-color-primary);
+  box-shadow: var(--elevation-1);
+}
+
+.toggle-accordion-header,
+.m3-accordion-header {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+  font-family: inherit;
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+  text-align: left;
+  line-height: 1.4;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background-color var(--transition-fast, 150ms ease),
+              color var(--transition-fast, 150ms ease);
+}
+
+.toggle-accordion-header:hover,
+.m3-accordion-header:hover {
+  background-color: rgba(128, 128, 128, 0.06);
+}
+
+.toggle-accordion-header:focus-visible,
+.m3-accordion-header:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: -2px;
+}
+
+.toggle-accordion-icon,
+.m3-accordion-icon {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--md-sys-color-primary);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-accordion-label,
+.m3-accordion-label {
+  flex: 1;
+  text-align: left;
+  color: var(--md-sys-color-on-surface);
+  font-weight: 600;
+}
+
+.toggle-accordion-chevron,
+.m3-accordion-chevron {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--md-sys-color-on-surface-variant);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              color var(--transition-fast, 150ms ease);
+}
+
+.toggle-accordion-item.open .toggle-accordion-chevron,
+.m3-accordion-item.open .m3-accordion-chevron {
+  transform: rotate(180deg);
+  color: var(--md-sys-color-primary);
+}
+
+.toggle-accordion-body,
+.m3-accordion-body {
+  box-sizing: border-box;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding: 0 20px;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--md-sys-color-on-surface-variant);
+  transition: max-height 350ms cubic-bezier(0.4, 0, 0.2, 1),
+              padding 300ms ease,
+              opacity 250ms ease;
+}
+
+.toggle-accordion-item.open .toggle-accordion-body,
+.m3-accordion-item.open .m3-accordion-body {
+  max-height: 600px;
+  opacity: 1;
+  padding: 0 20px 20px 20px;
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   15. MODAL BOTTOM SHEET
+   -------------------------------------------------------------------------- */
+.m3-bottom-sheet-scrim {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  z-index: 550;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.m3-bottom-sheet-scrim.show {
+  display: flex;
+  opacity: 1;
+}
+
+.m3-bottom-sheet {
+  background-color: var(--md-sys-color-surface);
+  border-radius: 28px 28px 0 0;
+  width: 100%;
+  max-width: 640px;
+  padding: 16px 24px 32px;
+  box-shadow: var(--elevation-5);
+  transform: translateY(100%);
+  transition: transform var(--transition-spring);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.m3-bottom-sheet-scrim.show .m3-bottom-sheet {
+  transform: translateY(0);
+}
+
+.m3-bottom-sheet-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--md-sys-color-outline-variant);
+  margin: 0 auto 8px;
+}
+
+/* --------------------------------------------------------------------------
+   16. SKELETON SHIMMER LOADERS
+   -------------------------------------------------------------------------- */
+.m3-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--md-sys-color-surface-container-high) 0%,
+    var(--md-sys-color-surface-container-highest) 50%,
+    var(--md-sys-color-surface-container-high) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.8s infinite ease-in-out;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.m3-skeleton-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.m3-skeleton-bar {
+  height: 14px;
+  width: 100%;
+  border-radius: var(--radius-full);
+}
+
+/* --------------------------------------------------------------------------
+   17. PIN & OTP VERIFICATION BOXES
+   -------------------------------------------------------------------------- */
+.toggle-pin-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-pin-box {
+  width: 48px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--md-sys-color-primary);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.toggle-pin-box:focus {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   18. GOOGLE GEMINI AI SPARKLE SWITCH
+   -------------------------------------------------------------------------- */
+.toggle-gemini {
+  width: 68px;
+  height: 34px;
+}
+
+.toggle-gemini .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #1e1f20;
+  border: 1px solid #3c4043;
+  transition: all 400ms ease;
+  overflow: hidden;
+}
+
+.toggle-gemini .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: #3c4043;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c4c7c5;
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease;
+}
+
+.toggle-gemini .thumb .material-symbols-rounded {
+  font-size: 18px;
+  transition: transform 400ms ease, color 300ms ease;
+}
+
+.toggle-gemini input:checked + .track {
+  background: linear-gradient(135deg, #1b0933, #041e49);
+  border-color: #a855f7;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
+}
+
+.toggle-gemini input:checked + .track .thumb {
+  transform: translateX(34px);
+  background: linear-gradient(135deg, #a855f7, #3b82f6);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+}
+
+.toggle-gemini input:checked + .track .thumb .material-symbols-rounded {
+  transform: rotate(180deg) scale(1.1);
+}
+
+/* --------------------------------------------------------------------------
+   19. TABS & SEGMENTED CONTROLS
+   -------------------------------------------------------------------------- */
+.toggle-tabs-bar {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--md-sys-color-card-border);
+  position: relative;
+  gap: 8px;
+  background-color: var(--md-sys-color-surface);
+  padding: 0 4px;
+}
+
+.toggle-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  font-family: var(--font-family);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.toggle-tab-btn .material-symbols-rounded {
+  font-size: 18px;
+  transition: color var(--transition-fast);
+}
+
+.toggle-tab-btn:hover {
+  color: var(--md-sys-color-on-surface);
+  background-color: var(--md-sys-color-surface-container);
+}
+
+.toggle-tab-btn.active {
+  color: var(--md-sys-color-primary);
+  font-weight: 700;
+}
+
+.toggle-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--md-sys-color-primary);
+  border-radius: 3px 3px 0 0;
+}
+
+.toggle-pill-segmented {
+  display: inline-flex;
+  background-color: var(--md-sys-color-surface-container-high);
+  padding: 4px;
+  border-radius: var(--radius-full);
+  gap: 4px;
+}
+
+.toggle-pill-btn {
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  font-family: var(--font-family);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle-pill-btn.active {
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-primary);
+  box-shadow: var(--elevation-1);
+}
+
+.toggle-pill-btn:hover:not(.active) {
+  color: var(--md-sys-color-on-surface);
+}
+
+/* --------------------------------------------------------------------------
+   20. DROPDOWNS & SELECT MENUS
+   -------------------------------------------------------------------------- */
+.toggle-select-wrapper {
+  position: relative;
+  display: inline-block;
+  min-width: 240px;
+}
+
+.toggle-select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  font-size: 0.9rem;
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.toggle-select-trigger:hover {
+  background-color: var(--md-sys-color-surface-container);
+  border-color: var(--md-sys-color-outline);
+}
+
+.toggle-select-trigger:focus, .toggle-select-wrapper.open .toggle-select-trigger {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
+}
+
+.toggle-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-3);
+  padding: 6px;
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.toggle-select-wrapper.open .toggle-select-menu {
+  display: flex;
+}
+
+.toggle-select-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--md-sys-color-on-surface);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.toggle-select-item:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+.toggle-select-item.selected {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   21. BOTTOM SHEETS & DRAWERS
+   -------------------------------------------------------------------------- */
+.toggle-bottom-sheet-preview {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-card-border);
+  border-radius: var(--radius-2xl) var(--radius-2xl) var(--radius-md) var(--radius-md);
+  box-shadow: var(--elevation-4);
+  overflow: hidden;
+  padding-bottom: 12px;
+}
+
+.toggle-sheet-handle-bar {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 6px;
+  cursor: grab;
+}
+
+.toggle-sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background-color: var(--md-sys-color-outline-variant);
+}
+
+.toggle-sheet-header {
+  padding: 12px 24px 16px;
+  border-bottom: 1px solid var(--md-sys-color-card-border);
+}
+
+.toggle-sheet-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 4px;
+}
+
+.toggle-sheet-body {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggle-sheet-action-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-family);
+  font-size: 0.92rem;
+}
+
+.toggle-sheet-action-row:hover {
+  background-color: var(--md-sys-color-surface-container);
+}
+
+.toggle-sheet-action-row .material-symbols-rounded {
+  font-size: 22px;
+  color: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   22. STAR RATING
+   -------------------------------------------------------------------------- */
+.toggle-rating {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.toggle-rating.readonly .toggle-star {
+  cursor: default;
+  pointer-events: none;
+}
+
+.toggle-star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  color: var(--md-sys-color-outline-variant, #cac4d0);
+  font-size: 0;
+  line-height: 1;
+  transition: color 150ms ease, transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggle-star:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary, #6750a4);
+  outline-offset: 2px;
+}
+
+.toggle-star .material-symbols-rounded {
+  font-size: 28px;
+  display: block;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 28;
+  transition: font-variation-settings 200ms ease, color 150ms ease;
+  user-select: none;
+}
+
+/* Hover / keyboard-focus highlight */
+.toggle-star:hover,
+.toggle-star.hover {
+  transform: scale(1.25);
+  color: var(--md-sys-color-primary, #6750a4);
+}
+
+.toggle-star:hover .material-symbols-rounded,
+.toggle-star.hover .material-symbols-rounded {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 28;
+}
+
+/* Filled / active state (gold) */
+.toggle-star.active {
+  color: #f9ab00;
+}
+
+.toggle-star.active .material-symbols-rounded {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 28;
+}
+
+/* Half-star (read-only fractional) */
+.toggle-star.half {
+  color: #f9ab00;
+}
+
+.toggle-star.half .material-symbols-rounded {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 28;
+}
+
+/* --------------------------------------------------------------------------
+   23. BADGES & NOTIFICATION COUNTERS
+   -------------------------------------------------------------------------- */
+.toggle-badge-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.toggle-badge-pill {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background-color: #ea4335;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  height: 20px;
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--md-sys-color-surface);
+  box-shadow: var(--elevation-1);
+}
+
+.toggle-badge-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background-color: #ea4335;
+  border-radius: 50%;
+  border: 2px solid var(--md-sys-color-surface);
+}
+
+.toggle-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.toggle-status-indicator.online {
+  background-color: rgba(52, 168, 83, 0.12);
+  color: #1e8e3e;
+}
+.toggle-status-indicator.busy {
+  background-color: rgba(234, 67, 53, 0.12);
+  color: #d93025;
+}
+.toggle-status-indicator.away {
+  background-color: rgba(251, 188, 5, 0.15);
+  color: #b06000;
+}
+
+.toggle-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.toggle-badge-pulse {
+  position: relative;
+}
+
+.toggle-badge-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: badgePulse 2s infinite cubic-bezier(0.24, 0, 0.38, 1);
+}
+
+@keyframes badgePulse {
+  0% { transform: scale(0.9); opacity: 0.9; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   23. SPEED DIAL & FLOATING MENUS
+   -------------------------------------------------------------------------- */
+.toggle-speed-dial {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-speed-dial-trigger {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border: none;
+  box-shadow: var(--elevation-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.toggle-speed-dial-trigger .material-symbols-rounded {
+  font-size: 26px;
+  transition: transform var(--transition-spring);
+}
+
+.toggle-speed-dial.open .toggle-speed-dial-trigger {
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-speed-dial.open .toggle-speed-dial-trigger .material-symbols-rounded {
+  transform: rotate(135deg);
+}
+
+.toggle-speed-dial-items {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px) scale(0.95);
+  transition: all var(--transition-base);
+}
+
+.toggle-speed-dial.open .toggle-speed-dial-items {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.toggle-speed-dial-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.toggle-dial-label {
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: var(--elevation-2);
+  white-space: nowrap;
+  border: 1px solid var(--md-sys-color-card-border);
+}
+
+.toggle-dial-sub-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-card-border);
+  box-shadow: var(--elevation-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.toggle-dial-sub-btn:hover {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  transform: scale(1.08);
+}
+
+/* --------------------------------------------------------------------------
+   24. DATE & TIME PICKERS
+   -------------------------------------------------------------------------- */
+.toggle-datepicker-card {
+  width: 100%;
+  max-width: 320px;
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-card-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-3);
+  padding: 20px;
+}
+
+.toggle-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.toggle-calendar-month {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-calendar-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--md-sys-color-outline);
+  transition: background-color var(--transition-fast);
+}
+
+.toggle-calendar-nav-btn:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--md-sys-color-outline);
+  margin-bottom: 8px;
+}
+
+.toggle-calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.toggle-calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  background: transparent;
+}
+
+.toggle-calendar-day:hover:not(.empty) {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+.toggle-calendar-day.selected {
+  background-color: var(--md-sys-color-primary) !important;
+  color: var(--md-sys-color-on-primary) !important;
+  font-weight: 700;
+}
+
+.toggle-calendar-day.today {
+  border: 1px solid var(--md-sys-color-primary);
+  font-weight: 700;
+}
+
+.toggle-calendar-day.in-range {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-radius: 0;
+}
+
+/* --------------------------------------------------------------------------
+   25. FILE UPLOAD & DROPZONE
+   -------------------------------------------------------------------------- */
+.toggle-dropzone-box {
+  width: 100%;
+  border: 2px dashed var(--md-sys-color-outline-variant);
+  border-radius: var(--radius-xl);
+  padding: 32px 24px;
+  background-color: var(--md-sys-color-surface-container-lowest);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toggle-dropzone-box:hover, .toggle-dropzone-box.drag-over {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary-container);
+  background-opacity: 0.15;
+}
+
+.toggle-dropzone-icon-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-dropzone-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-dropzone-sub {
+  font-size: 0.82rem;
+  color: var(--md-sys-color-outline);
+}
+
+.toggle-file-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-card-border);
+  border-radius: var(--radius-md);
+  margin-top: 12px;
+  width: 100%;
+}
+
+.toggle-file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-file-progress-bar {
+  height: 4px;
+  width: 100%;
+  background-color: var(--md-sys-color-surface-container-high);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.toggle-file-progress-fill {
+  height: 100%;
+  background-color: var(--md-sys-color-primary);
+  border-radius: 2px;
+  transition: width 300ms ease;
+}
+
+/* --------------------------------------------------------------------------
+   26. STAT CARDS & METRIC INDICATORS
+   -------------------------------------------------------------------------- */
+.toggle-stat-card {
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-card-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--elevation-1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all var(--transition-fast);
+}
+
+.toggle-stat-card:hover {
+  box-shadow: var(--elevation-2);
+  transform: translateY(-2px);
+}
+
+.toggle-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggle-stat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--md-sys-color-outline);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.toggle-stat-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.toggle-stat-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.toggle-stat-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+}
+
+.toggle-stat-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.toggle-stat-trend.positive {
+  background-color: rgba(52, 168, 83, 0.12);
+  color: #1e8e3e;
+}
+
+.toggle-stat-trend.negative {
+  background-color: rgba(234, 67, 53, 0.12);
+  color: #d93025;
+}
+
+/* --------------------------------------------------------------------------
+   27. TIMELINE & ACTIVITY FEEDS
+   -------------------------------------------------------------------------- */
+.toggle-timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: 28px;
+}
+
+.toggle-timeline::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 9px;
+  width: 2px;
+  background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.toggle-timeline-item {
+  position: relative;
+  padding-bottom: 24px;
+}
+
+.toggle-timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.toggle-timeline-dot {
+  position: absolute;
+  left: -28px;
+  top: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--md-sys-color-surface);
+  border: 3px solid var(--md-sys-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.toggle-timeline-dot.completed {
+  background-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+  color: #ffffff;
+}
+
+.toggle-timeline-dot.completed .material-symbols-rounded {
+  font-size: 14px;
+}
+
+.toggle-timeline-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.toggle-timeline-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-timeline-time {
+  font-size: 0.78rem;
+  color: var(--md-sys-color-outline);
+}
+
+.toggle-timeline-content {
+  font-size: 0.88rem;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   28. TREE VIEW & FILE EXPLORER
+   -------------------------------------------------------------------------- */
+.toggle-treeview-card {
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-card-border);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  max-width: 360px;
+  width: 100%;
+}
+
+.toggle-tree-node {
+  display: flex;
+  flex-direction: column;
+}
+
+.toggle-tree-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--md-sys-color-on-surface);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: background-color var(--transition-fast);
+  user-select: none;
+}
+
+.toggle-tree-row:hover {
+  background-color: var(--md-sys-color-surface-container);
+}
+
+.toggle-tree-row.selected {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-weight: 600;
+}
+
+.toggle-tree-toggle {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: var(--md-sys-color-outline);
+  transition: transform var(--transition-fast);
+}
+
+.toggle-tree-toggle.open {
+  transform: rotate(90deg);
+}
+
+.toggle-tree-children {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   29. MATERIAL 3 TYPOGRAPHY & TYPE SCALE
+   -------------------------------------------------------------------------- */
+.toggle-type-display-lg {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-type-display-md {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-type-display-sm {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-type-headline-lg {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-type-headline-md {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-type-headline-sm {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-type-title-lg {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-type-title-md {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-type-title-sm {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-type-body-lg {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-type-body-md {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.toggle-type-body-sm {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.toggle-type-label-lg {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.toggle-type-label-md {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.toggle-type-label-sm {
+  font-family: var(--font-family, 'Outfit', sans-serif);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--md-sys-color-outline);
+}
+
+.toggle-type-code {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.88em;
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-primary);
+  padding: 0.2em 0.5em;
+  border-radius: 6px;
+  border: 1px solid var(--md-sys-color-card-border);
+}
+
+.toggle-type-gradient {
+  background: linear-gradient(135deg, #4285f4 0%, #a142f4 50%, #ea4335 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   30. ALERTS & CALLOUT BANNERS
+   -------------------------------------------------------------------------- */
+.toggle-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: var(--radius-lg, 16px);
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  transition: all var(--transition-base, 250ms ease);
+  position: relative;
+}
+
+.toggle-alert-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.toggle-alert-content {
+  flex: 1;
+}
+
+.toggle-alert-title {
+  font-weight: 700;
+  font-size: 0.96rem;
+  margin-bottom: 2px;
+}
+
+.toggle-alert-message {
+  font-size: 0.88rem;
+  opacity: 0.9;
+}
+
+.toggle-alert-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  opacity: 0.7;
+  transition: opacity 150ms ease, background-color 150ms ease;
+  flex-shrink: 0;
+}
+
+.toggle-alert-close:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Severity: Info */
+.toggle-alert-info {
+  background-color: hsl(217, 85%, 94%);
+  color: hsl(217, 80%, 25%);
+  border: 1px solid hsl(217, 85%, 85%);
+}
+[data-theme="dark"] .toggle-alert-info {
+  background-color: hsla(217, 85%, 55%, 0.15);
+  color: hsl(217, 95%, 80%);
+  border: 1px solid hsla(217, 85%, 60%, 0.3);
+}
+
+/* Severity: Success */
+.toggle-alert-success {
+  background-color: hsl(142, 60%, 93%);
+  color: hsl(142, 70%, 20%);
+  border: 1px solid hsl(142, 60%, 82%);
+}
+[data-theme="dark"] .toggle-alert-success {
+  background-color: hsla(142, 60%, 45%, 0.15);
+  color: hsl(142, 85%, 75%);
+  border: 1px solid hsla(142, 60%, 50%, 0.3);
+}
+
+/* Severity: Warning */
+.toggle-alert-warning {
+  background-color: hsl(43, 95%, 92%);
+  color: hsl(43, 90%, 22%);
+  border: 1px solid hsl(43, 95%, 80%);
+}
+[data-theme="dark"] .toggle-alert-warning {
+  background-color: hsla(43, 95%, 50%, 0.15);
+  color: hsl(43, 95%, 78%);
+  border: 1px solid hsla(43, 95%, 55%, 0.3);
+}
+
+/* Severity: Error */
+.toggle-alert-error {
+  background-color: hsl(4, 85%, 94%);
+  color: hsl(4, 75%, 26%);
+  border: 1px solid hsl(4, 85%, 85%);
+}
+[data-theme="dark"] .toggle-alert-error {
+  background-color: hsla(4, 85%, 60%, 0.15);
+  color: hsl(4, 95%, 82%);
+  border: 1px solid hsla(4, 85%, 65%, 0.3);
+}
+
+/* Outlined Variant */
+.toggle-alert.outlined {
+  background-color: transparent !important;
+}
+
+/* Filled Variant */
+.toggle-alert.filled.toggle-alert-info {
+  background-color: #0b57d0;
+  color: #ffffff;
+  border-color: #0b57d0;
+}
+.toggle-alert.filled.toggle-alert-success {
+  background-color: #0d8043;
+  color: #ffffff;
+  border-color: #0d8043;
+}
+.toggle-alert.filled.toggle-alert-warning {
+  background-color: #e37400;
+  color: #ffffff;
+  border-color: #e37400;
+}
+.toggle-alert.filled.toggle-alert-error {
+  background-color: #d93025;
+  color: #ffffff;
+  border-color: #d93025;
+}
+
+/* --------------------------------------------------------------------------
+   31. LISTS & LIST ITEMS
+   -------------------------------------------------------------------------- */
+.toggle-list {
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-card-border);
+  border-radius: var(--radius-lg, 16px);
+  padding: 8px 0;
+  width: 100%;
+  max-width: 440px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.toggle-list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast, 150ms ease);
+  user-select: none;
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-list-item:hover {
+  background-color: var(--md-sys-color-surface-container);
+}
+
+.toggle-list-item.selected {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.toggle-list-icon {
+  font-size: 22px;
+  color: var(--md-sys-color-primary);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-list-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.toggle-list-title {
+  font-weight: 600;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toggle-list-subtitle {
+  font-size: 0.8rem;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toggle-list-action {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+   32. PAGINATION CONTROLS
+   -------------------------------------------------------------------------- */
+.toggle-pagination {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  flex-wrap: wrap;
+}
+
+.toggle-page-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: var(--radius-full, 9999px);
+  border: 1px solid var(--md-sys-color-card-border);
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.toggle-page-btn:hover:not(:disabled):not(.active) {
+  background: var(--md-sys-color-surface-container);
+  border-color: var(--md-sys-color-outline-variant);
+}
+
+.toggle-page-btn.active {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary, #ffffff);
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 2px 6px hsla(var(--primary-h, 217), 89%, 45%, 0.35);
+}
+
+.toggle-page-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.toggle-page-ellipsis {
+  min-width: 28px;
+  text-align: center;
+  color: var(--md-sys-color-outline);
+  font-size: 0.9rem;
+}
+
+/* --------------------------------------------------------------------------
+   33. STEPPER & WIZARD
+   -------------------------------------------------------------------------- */
+.toggle-stepper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 560px;
+  justify-content: space-between;
+  position: relative;
+}
+
+.toggle-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.toggle-step-node {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid var(--md-sys-color-card-border);
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-outline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.92rem;
+  font-weight: 700;
+  transition: all var(--transition-base, 250ms ease);
+}
+
+.toggle-step.completed .toggle-step-node {
+  background-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+  color: #ffffff;
+}
+
+.toggle-step.active .toggle-step-node {
+  border-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 4px var(--md-sys-color-primary-container);
+}
+
+.toggle-step-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--md-sys-color-outline);
+  transition: color var(--transition-fast, 150ms ease);
+  white-space: nowrap;
+}
+
+.toggle-step.active .toggle-step-label,
+.toggle-step.completed .toggle-step-label {
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-step-connector {
+  flex: 1;
+  height: 2px;
+  background-color: var(--md-sys-color-card-border);
+  margin: 0 8px;
+  position: relative;
+  top: -14px;
+  transition: background-color var(--transition-base, 250ms ease);
+}
+
+.toggle-step-connector.completed {
+  background-color: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   34. DIVIDERS & SEPARATORS
+   -------------------------------------------------------------------------- */
+.toggle-divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--md-sys-color-card-border);
+  margin: 16px 0;
+  border: none;
+}
+
+.toggle-divider-labeled {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin: 18px 0;
+  color: var(--md-sys-color-outline);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.toggle-divider-labeled::before,
+.toggle-divider-labeled::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--md-sys-color-card-border);
+}
+
+.toggle-divider-chip {
+  padding: 4px 12px;
+  border-radius: var(--radius-full, 9999px);
+  background-color: var(--md-sys-color-surface-container);
+  border: 1px solid var(--md-sys-color-card-border);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.toggle-divider-vertical {
+  width: 1px;
+  height: 32px;
+  background-color: var(--md-sys-color-card-border);
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 12px;
+}
+
+/* --------------------------------------------------------------------------
+   35. SEGMENTED TOGGLE BUTTON GROUPS
+   -------------------------------------------------------------------------- */
+.toggle-btn-group {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-card-border);
+  border-radius: var(--radius-full, 9999px);
+  padding: 4px;
+  gap: 2px;
+  user-select: none;
+}
+
+.toggle-segment-btn {
+  padding: 8px 18px;
+  border-radius: var(--radius-full, 9999px);
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.toggle-segment-btn:hover:not(.active) {
+  background-color: rgba(128, 128, 128, 0.08);
+  color: var(--md-sys-color-on-surface);
+}
+
+.toggle-segment-btn.active {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary, #ffffff);
+  box-shadow: 0 2px 6px hsla(var(--primary-h, 217), 89%, 45%, 0.3);
+}
+
+.toggle-segment-btn .material-symbols-rounded {
+  font-size: 18px;
+}
+
+/* --------------------------------------------------------------------------
+   COLOR SWATCHES
+   -------------------------------------------------------------------------- */
+.toggle-swatch-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.toggle-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: transform var(--transition-spring),
+              box-shadow var(--transition-base);
+  box-shadow: var(--elevation-2);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggle-swatch:hover {
+  transform: scale(1.2);
+  box-shadow: var(--elevation-3);
+}
+
+.toggle-swatch:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 3px;
+}
+
+/* Active: ring using surface token so it adapts to light/dark */
+.toggle-swatch.active {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px var(--md-sys-color-surface),
+              0 0 0 5px currentColor,
+              var(--elevation-2);
+}
+
+/* Checkmark overlay */
+.toggle-swatch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  transition: opacity var(--transition-fast);
+  opacity: 0;
+}
+
+.toggle-swatch.active::after {
+  content: '✓';
+  opacity: 1;
+}
+
+

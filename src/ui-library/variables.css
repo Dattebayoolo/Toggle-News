@@ -1,0 +1,94 @@
+/*!
+ * Toggle UI Library v1.0.0
+ * Modern Material 3 inspired toggle & switch UI system
+ * https://github.com/Dattebayoolo/Toggle-Ui-Library
+ * MIT License
+ */
+:root {
+  /* Google Material You (M3) Color System - Default: Google Blue */
+  --md-primary-h: 217;
+  --md-primary-s: 89%;
+  --md-primary-l: 45%;
+
+  --md-sys-color-primary: hsl(var(--md-primary-h), var(--md-primary-s), var(--md-primary-l));
+  --md-sys-color-primary-hover: hsl(var(--md-primary-h), var(--md-primary-s), 40%);
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: hsl(var(--md-primary-h), 85%, 92%);
+  --md-sys-color-on-primary-container: hsl(var(--md-primary-h), 90%, 18%);
+
+  /* Google Brand Accents */
+  --google-blue: #4285f4;
+  --google-red: #ea4335;
+  --google-yellow: #fbbc05;
+  --google-green: #34a853;
+
+  /* Surfaces & Backgrounds - Light */
+  --md-sys-color-surface: #ffffff;
+  --md-sys-color-surface-dim: #f8f9fa;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f7f9fc;
+  --md-sys-color-surface-container: #edf2f7;
+  --md-sys-color-surface-container-high: #e3e8ee;
+  --md-sys-color-surface-container-highest: #dbe0e6;
+  
+  --md-sys-color-on-surface: #1f1f1f;
+  --md-sys-color-on-surface-variant: #444746;
+  --md-sys-color-outline: #74777f;
+  --md-sys-color-outline-variant: #c4c7c5;
+  --md-sys-color-card-border: rgba(0, 0, 0, 0.08);
+
+  /* Shadows - Material Design 3 elevation */
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 3px 1px rgba(0, 0, 0, 0.04);
+  --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --elevation-3: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --elevation-4: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+  --elevation-5: 0 16px 36px rgba(0, 0, 0, 0.16), 0 6px 12px rgba(0, 0, 0, 0.08);
+
+  /* Radii - Google Pill & Rounded Corners */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-family: 'Outfit', 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.2, 0, 0, 1);
+  --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-slow: 500ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Dark Theme - Google / Gemini Dark Palette */
+[data-theme="dark"] {
+  --md-sys-color-primary: hsl(var(--md-primary-h), 85%, 68%);
+  --md-sys-color-primary-hover: hsl(var(--md-primary-h), 90%, 75%);
+  --md-sys-color-on-primary: #041e49;
+  --md-sys-color-primary-container: hsl(var(--md-primary-h), 80%, 25%);
+  --md-sys-color-on-primary-container: hsl(var(--md-primary-h), 85%, 90%);
+
+  --md-sys-color-surface: #131314;
+  --md-sys-color-surface-dim: #0e0e0f;
+  --md-sys-color-surface-container-lowest: #0c0d0e;
+  --md-sys-color-surface-container-low: #1a1a1c;
+  --md-sys-color-surface-container: #1e1f20;
+  --md-sys-color-surface-container-high: #282a2c;
+  --md-sys-color-surface-container-highest: #333538;
+
+  --md-sys-color-on-surface: #e3e3e3;
+  --md-sys-color-on-surface-variant: #c4c7c5;
+  --md-sys-color-outline: #8e918f;
+  --md-sys-color-outline-variant: #444746;
+  --md-sys-color-card-border: rgba(255, 255, 255, 0.1);
+
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --elevation-2: 0 3px 8px rgba(0, 0, 0, 0.45);
+  --elevation-3: 0 6px 16px rgba(0, 0, 0, 0.55);
+  --elevation-4: 0 10px 28px rgba(0, 0, 0, 0.65);
+  --elevation-5: 0 18px 40px rgba(0, 0, 0, 0.75);
+}

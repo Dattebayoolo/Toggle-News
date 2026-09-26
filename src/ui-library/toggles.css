@@ -1,0 +1,1502 @@
+/*!
+ * Toggle UI Library v1.0.0
+ * Modern Material 3 inspired toggle & switch UI system
+ * https://github.com/Dattebayoolo/Toggle-Ui-Library
+ * MIT License
+ */
+/* ==========================================================================
+   TOGGLE UI COMPONENT LIBRARY - STYLESHEET
+   Handcrafted, accessible, CSS-only and interactive toggle switches
+   ========================================================================== */
+
+/* Universal Reset for Toggle Controls */
+.toggle-base {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggle-base input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   1. Google Material Design 3 (M3) Standard Switch
+   Official specs: 52x32mm track, 16px to 24px expanding thumb
+   -------------------------------------------------------------------------- */
+.toggle-m3 {
+  width: 52px;
+  height: 32px;
+}
+
+.toggle-m3 .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background-color: var(--md-sys-color-surface-container-highest);
+  border: 2px solid var(--md-sys-color-outline);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.toggle-m3 .thumb {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background-color: var(--md-sys-color-outline);
+  transition: transform var(--transition-base), width var(--transition-base), height var(--transition-base), top var(--transition-base), left var(--transition-base), background-color var(--transition-base);
+}
+
+.toggle-m3 input:checked + .track {
+  background-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-m3 input:checked + .track .thumb {
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  transform: translateX(20px);
+  background-color: var(--md-sys-color-on-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-m3:hover .thumb {
+  box-shadow: 0 0 0 8px rgba(11, 87, 208, 0.08);
+}
+
+.toggle-m3 input:checked:hover + .track .thumb {
+  box-shadow: 0 0 0 8px rgba(11, 87, 208, 0.16);
+}
+
+/* --------------------------------------------------------------------------
+   2. Google M3 Switch with Animated Icon Thumb
+   Checkmark appears when ON, minus/cross when OFF
+   -------------------------------------------------------------------------- */
+.toggle-m3-icon {
+  width: 52px;
+  height: 32px;
+}
+
+.toggle-m3-icon .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background-color: var(--md-sys-color-surface-container-highest);
+  border: 2px solid var(--md-sys-color-outline);
+  transition: all var(--transition-base);
+}
+
+.toggle-m3-icon .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background-color: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-base), background-color var(--transition-base);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-m3-icon .thumb-icon {
+  font-size: 16px;
+  color: var(--md-sys-color-outline);
+  transition: all var(--transition-base);
+}
+
+.toggle-m3-icon input:checked + .track {
+  background-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-m3-icon input:checked + .track .thumb {
+  transform: translateX(20px);
+  background-color: var(--md-sys-color-on-primary);
+}
+
+.toggle-m3-icon input:checked + .track .thumb-icon {
+  color: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   3. Google Material Ripple Halo Switch
+   Features expansive Material You ripple glow on hover/active
+   -------------------------------------------------------------------------- */
+.toggle-m3-halo {
+  width: 54px;
+  height: 32px;
+}
+
+.toggle-m3-halo .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  transition: all var(--transition-base);
+}
+
+.toggle-m3-halo .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-outline);
+  transition: transform var(--transition-spring), background var(--transition-base);
+}
+
+.toggle-m3-halo .halo {
+  position: absolute;
+  inset: -8px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  pointer-events: none;
+  transition: background var(--transition-fast), transform var(--transition-spring);
+  transform: scale(0.6);
+  opacity: 0;
+}
+
+.toggle-m3-halo:hover .halo {
+  background: var(--md-sys-color-primary);
+  opacity: 0.12;
+  transform: scale(1);
+}
+
+.toggle-m3-halo input:checked + .track {
+  background: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-m3-halo input:checked + .track .thumb {
+  transform: translateX(22px);
+  background: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   4. iOS 18 Liquid Glass Switch
+   Silky smooth bounce, crisp edge and vibrant Apple green
+   -------------------------------------------------------------------------- */
+.toggle-ios {
+  width: 51px;
+  height: 31px;
+}
+
+.toggle-ios .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background-color: #e9e9ea;
+  transition: background-color 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .toggle-ios .track {
+  background-color: #39393d;
+}
+
+.toggle-ios .thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: var(--radius-full);
+  background-color: #ffffff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.16);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-ios input:checked + .track {
+  background-color: #34c759;
+}
+
+.toggle-ios input:checked + .track .thumb {
+  transform: translateX(20px);
+}
+
+.toggle-ios:active .thumb {
+  width: 32px;
+}
+
+.toggle-ios input:checked:active + .track .thumb {
+  transform: translateX(15px);
+}
+
+/* --------------------------------------------------------------------------
+   5. Day to Night Celestial Switch
+   Animated sun, drifting clouds, stars and moon craters
+   -------------------------------------------------------------------------- */
+.toggle-daynight {
+  width: 76px;
+  height: 36px;
+}
+
+.toggle-daynight .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #42a5f5, #29b6f6);
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background 500ms ease;
+}
+
+.toggle-daynight .clouds {
+  position: absolute;
+  bottom: -4px;
+  right: 6px;
+  width: 32px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  box-shadow: -8px 4px 0 -2px rgba(255, 255, 255, 0.5);
+  transition: transform 500ms ease, opacity 400ms ease;
+}
+
+.toggle-daynight .stars {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: all 400ms ease;
+  font-size: 10px;
+  color: #fff6a6;
+  letter-spacing: 5px;
+}
+
+.toggle-daynight .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: #ffca28;
+  box-shadow: 0 0 10px rgba(255, 202, 40, 0.8);
+  transition: transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1), background 400ms ease, box-shadow 400ms ease;
+}
+
+.toggle-daynight .moon-crater {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #b0bec5;
+  border-radius: 50%;
+  top: 6px;
+  left: 12px;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.toggle-daynight input:checked + .track {
+  background: linear-gradient(135deg, #0d1b2a, #1b263b);
+}
+
+.toggle-daynight input:checked + .track .clouds {
+  transform: translateY(25px);
+  opacity: 0;
+}
+
+.toggle-daynight input:checked + .track .stars {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toggle-daynight input:checked + .track .thumb {
+  transform: translateX(40px);
+  background: #eceff1;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.toggle-daynight input:checked + .track .moon-crater {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   6. Elastic Jelly / Spring Switch
+   Thumb squishes and elongates like rubber during motion
+   -------------------------------------------------------------------------- */
+.toggle-squish {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-squish .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-highest);
+  transition: background 300ms ease;
+  border: 2px solid var(--md-sys-color-outline-variant);
+}
+
+.toggle-squish .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-outline);
+  transition: transform 400ms cubic-bezier(0.34, 1.7, 0.64, 1), width 250ms ease, background 300ms ease;
+}
+
+.toggle-squish:active .thumb {
+  width: 32px;
+}
+
+.toggle-squish input:checked + .track {
+  background: var(--md-sys-color-primary-container);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-squish input:checked + .track .thumb {
+  transform: translateX(28px);
+  background: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   7. Cyberpunk Neon Hologram Switch
+   Laser grid, radioactive neon glow, and high-tech status
+   -------------------------------------------------------------------------- */
+.toggle-cyberpunk {
+  width: 68px;
+  height: 34px;
+}
+
+.toggle-cyberpunk .track {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: #0a0b10;
+  border: 1px solid #222938;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
+  transition: all 300ms ease;
+  overflow: hidden;
+}
+
+.toggle-cyberpunk .track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 234, 0.05) 2px, rgba(0, 255, 234, 0.05) 4px);
+  pointer-events: none;
+}
+
+.toggle-cyberpunk .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: #1e2230;
+  border: 1px solid #485269;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 300ms cubic-bezier(0.2, 0.9, 0.3, 1.2), background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+}
+
+.toggle-cyberpunk .neon-bar {
+  width: 4px;
+  height: 14px;
+  background: #5a647d;
+  border-radius: 2px;
+  transition: all 300ms ease;
+}
+
+.toggle-cyberpunk input:checked + .track {
+  border-color: #00ffea;
+  box-shadow: 0 0 14px rgba(0, 255, 234, 0.4), inset 0 0 10px rgba(0, 255, 234, 0.15);
+}
+
+.toggle-cyberpunk input:checked + .track .thumb {
+  transform: translateX(34px);
+  background: #002b28;
+  border-color: #00ffea;
+  box-shadow: 0 0 10px #00ffea;
+}
+
+.toggle-cyberpunk input:checked + .track .neon-bar {
+  background: #00ffea;
+  box-shadow: 0 0 8px #00ffea;
+}
+
+/* --------------------------------------------------------------------------
+   8. Neumorphic Soft Tactile Switch
+   Tactile concave and convex soft shadow morph
+   -------------------------------------------------------------------------- */
+.toggle-neumorphic {
+  width: 64px;
+  height: 34px;
+}
+
+.toggle-neumorphic .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #e2e8f0;
+  box-shadow: inset 3px 3px 6px #cbd5e1, inset -3px -3px 6px #ffffff;
+  transition: all 300ms ease;
+}
+
+[data-theme="dark"] .toggle-neumorphic .track {
+  background: #1e2126;
+  box-shadow: inset 3px 3px 6px #131518, inset -3px -3px 6px #292d34;
+}
+
+.toggle-neumorphic .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #e2e8f0;
+  box-shadow: 3px 3px 6px #cbd5e1, -3px -3px 6px #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease;
+}
+
+[data-theme="dark"] .toggle-neumorphic .thumb {
+  background: #1e2126;
+  box-shadow: 3px 3px 6px #131518, -3px -3px 6px #292d34;
+}
+
+.toggle-neumorphic .led-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+  transition: all 300ms ease;
+}
+
+.toggle-neumorphic input:checked + .track .thumb {
+  transform: translateX(30px);
+}
+
+.toggle-neumorphic input:checked + .track .led-dot {
+  background: #3b82f6;
+  box-shadow: 0 0 8px #3b82f6;
+}
+
+/* --------------------------------------------------------------------------
+   9. Typographic ON / OFF Switch
+   Cut-out typographic sliding letters
+   -------------------------------------------------------------------------- */
+.toggle-typo {
+  width: 72px;
+  height: 34px;
+}
+
+.toggle-typo .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #ffffff;
+  transition: background 300ms ease;
+}
+
+.toggle-typo .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-typo input:checked + .track {
+  background: var(--md-sys-color-primary);
+}
+
+.toggle-typo input:checked + .track .thumb {
+  transform: translateX(38px);
+}
+
+/* --------------------------------------------------------------------------
+   10. Minimalist Swiss Architecture Switch
+   Monochrome, hairline stroke and microscopic indicator dot
+   -------------------------------------------------------------------------- */
+.toggle-minimal {
+  width: 48px;
+  height: 24px;
+}
+
+.toggle-minimal .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--md-sys-color-outline);
+  background: transparent;
+  transition: all 250ms ease;
+}
+
+.toggle-minimal .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-outline);
+  transition: transform 250ms cubic-bezier(0.2, 0, 0, 1), background 250ms ease;
+}
+
+.toggle-minimal input:checked + .track {
+  border-color: var(--md-sys-color-on-surface);
+  background: var(--md-sys-color-on-surface);
+}
+
+.toggle-minimal input:checked + .track .thumb {
+  transform: translateX(24px);
+  background: var(--md-sys-color-surface);
+}
+
+/* --------------------------------------------------------------------------
+   11. Sound Waves Equalizer Switch
+   Equalizer bars dance when active, muted flat line when off
+   -------------------------------------------------------------------------- */
+.toggle-equalizer {
+  width: 66px;
+  height: 34px;
+}
+
+.toggle-equalizer .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-highest);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+  transition: all 300ms ease;
+}
+
+.toggle-equalizer .wave-bars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+}
+
+.toggle-equalizer .bar {
+  width: 2.5px;
+  height: 4px;
+  background: var(--md-sys-color-outline);
+  border-radius: 2px;
+  transition: all 250ms ease;
+}
+
+.toggle-equalizer .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-equalizer input:checked + .track {
+  background: var(--md-sys-color-primary-container);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-equalizer input:checked + .track .thumb {
+  transform: translateX(32px);
+}
+
+.toggle-equalizer input:checked + .track .bar {
+  background: var(--md-sys-color-primary);
+  animation: equalize 0.8s ease-in-out infinite alternate;
+}
+
+.toggle-equalizer input:checked + .track .bar:nth-child(1) { animation-delay: 0.1s; }
+.toggle-equalizer input:checked + .track .bar:nth-child(2) { animation-delay: 0.3s; }
+.toggle-equalizer input:checked + .track .bar:nth-child(3) { animation-delay: 0.5s; }
+.toggle-equalizer input:checked + .track .bar:nth-child(4) { animation-delay: 0.2s; }
+
+@keyframes equalize {
+  0% { height: 4px; }
+  100% { height: 16px; }
+}
+
+/* --------------------------------------------------------------------------
+   12. Password Peek Eye Switch
+   Animated eyelash and open pupil
+   -------------------------------------------------------------------------- */
+.toggle-eye {
+  width: 58px;
+  height: 32px;
+}
+
+.toggle-eye .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  transition: all 300ms ease;
+}
+
+.toggle-eye .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: var(--md-sys-color-outline);
+}
+
+.toggle-eye .thumb .material-symbols-rounded {
+  font-size: 16px;
+  transition: transform 250ms ease;
+}
+
+.toggle-eye input:checked + .track {
+  background: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-eye input:checked + .track .thumb {
+  transform: translateX(26px);
+  color: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   13. Nature Sprout & Bloom Switch
+   Budding seedling sprouting on activation
+   -------------------------------------------------------------------------- */
+.toggle-nature {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-nature .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #d7ccc8;
+  transition: background 350ms ease;
+}
+
+[data-theme="dark"] .toggle-nature .track {
+  background: #3e2723;
+}
+
+.toggle-nature .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #8d6e63;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), background 350ms ease;
+}
+
+.toggle-nature .sprout-icon {
+  font-size: 17px;
+  transform: scale(0.8) rotate(-15deg);
+  transition: transform 350ms ease, color 300ms ease;
+}
+
+.toggle-nature input:checked + .track {
+  background: #c8e6c9;
+}
+
+[data-theme="dark"] .toggle-nature input:checked + .track {
+  background: #1b5e20;
+}
+
+.toggle-nature input:checked + .track .thumb {
+  transform: translateX(28px);
+  background: #2e7d32;
+}
+
+.toggle-nature input:checked + .track .sprout-icon {
+  transform: scale(1.1) rotate(0deg);
+  color: #e8f5e9;
+}
+
+/* --------------------------------------------------------------------------
+   14. Pulsing Power Ring Switch
+   Illuminated power symbol with glowing neon halo
+   -------------------------------------------------------------------------- */
+.toggle-power {
+  width: 62px;
+  height: 34px;
+}
+
+.toggle-power .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #212529;
+  border: 1px solid #343a40;
+  transition: all 300ms ease;
+}
+
+.toggle-power .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #343a40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #adb5bd;
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), all 300ms ease;
+}
+
+.toggle-power .power-icon {
+  font-size: 16px;
+}
+
+.toggle-power input:checked + .track {
+  border-color: #0d6efd;
+  box-shadow: 0 0 12px rgba(13, 110, 253, 0.4);
+}
+
+.toggle-power input:checked + .track .thumb {
+  transform: translateX(28px);
+  background: #0d6efd;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(13, 110, 253, 0.8);
+}
+
+/* --------------------------------------------------------------------------
+   15. 8-Bit Retro Arcade Switch
+   Chunky pixelated borders and nostalgic arcade colors
+   -------------------------------------------------------------------------- */
+.toggle-pixel {
+  width: 62px;
+  height: 32px;
+}
+
+.toggle-pixel .track {
+  position: absolute;
+  inset: 0;
+  background: #474747;
+  border: 3px solid #000;
+  box-shadow: inset -2px -2px 0 0 #2b2b2b, inset 2px 2px 0 0 #707070;
+  transition: all 150ms steps(3);
+}
+
+.toggle-pixel .thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  background: #dc2626;
+  border: 2px solid #000;
+  box-shadow: inset -2px -2px 0 0 #991b1b, inset 2px 2px 0 0 #f87171;
+  transition: transform 150ms steps(4);
+}
+
+.toggle-pixel input:checked + .track {
+  background: #16a34a;
+  box-shadow: inset -2px -2px 0 0 #15803d, inset 2px 2px 0 0 #4ade80;
+}
+
+.toggle-pixel input:checked + .track .thumb {
+  transform: translateX(30px);
+  background: #facc15;
+  box-shadow: inset -2px -2px 0 0 #ca8a04, inset 2px 2px 0 0 #fde047;
+}
+
+/* --------------------------------------------------------------------------
+   16. Heart / Like Micro-interaction Switch
+   Bursting heart with floating heart particles
+   -------------------------------------------------------------------------- */
+.toggle-heart {
+  width: 58px;
+  height: 32px;
+}
+
+.toggle-heart .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  transition: all 300ms ease;
+}
+
+.toggle-heart .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease;
+}
+
+.toggle-heart .thumb .material-symbols-rounded {
+  font-size: 16px;
+  transition: transform 250ms ease, color 250ms ease;
+}
+
+.toggle-heart input:checked + .track {
+  background: #ffe4e6;
+  border-color: #f43f5e;
+}
+
+[data-theme="dark"] .toggle-heart input:checked + .track {
+  background: #4c0519;
+}
+
+.toggle-heart input:checked + .track .thumb {
+  transform: translateX(26px);
+  background: #f43f5e;
+  color: #ffffff;
+}
+
+.toggle-heart input:checked + .track .thumb .material-symbols-rounded {
+  font-variation-settings: 'FILL' 1;
+  animation: heartPop 400ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes heartPop {
+  0% { transform: scale(0.6); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* --------------------------------------------------------------------------
+   17. 3-Way Tri-State Segmented Toggle (Off - Auto - On)
+   Sliding indicator over segmented options
+   -------------------------------------------------------------------------- */
+.toggle-segmented {
+  position: relative;
+  display: inline-flex;
+  background: var(--md-sys-color-surface-container-high);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 2px;
+  user-select: none;
+}
+
+.toggle-segmented input[type="radio"] {
+  display: none;
+}
+
+.toggle-segmented label {
+  position: relative;
+  z-index: 2;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface-variant);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.toggle-segmented input:checked + label {
+  color: var(--md-sys-color-on-primary);
+  background: var(--md-sys-color-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* --------------------------------------------------------------------------
+   18. 3D Tumbler Flip Switch
+   Physical rocker switch tilting in 3D perspective
+   -------------------------------------------------------------------------- */
+.toggle-3d {
+  width: 62px;
+  height: 34px;
+  perspective: 200px;
+}
+
+.toggle-3d .rocker {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(to bottom, #d1d5db, #9ca3af);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6), 0 3px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #4b5563;
+  transform: rotateX(15deg);
+  transform-origin: center bottom;
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.4, 1), background 300ms ease;
+}
+
+.toggle-3d input:checked + .rocker {
+  transform: rotateX(-15deg);
+  background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+  color: #ffffff;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), 0 3px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   19. Space Rocket Thruster Switch
+   Rocket ships with flame particle trails
+   -------------------------------------------------------------------------- */
+.toggle-rocket {
+  width: 68px;
+  height: 34px;
+}
+
+.toggle-rocket .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #1e1b4b;
+  border: 1px solid #312e81;
+  overflow: hidden;
+  transition: all 300ms ease;
+}
+
+.toggle-rocket .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4338ca;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-rocket .rocket-icon {
+  font-size: 18px;
+  transform: rotate(45deg);
+  transition: transform 300ms ease;
+}
+
+.toggle-rocket input:checked + .track {
+  background: #0f172a;
+  border-color: #f97316;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+}
+
+.toggle-rocket input:checked + .track .thumb {
+  transform: translateX(34px);
+  background: #f97316;
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   20. Lock / Unlock Security Switch
+   Padlock unlatches and pops open
+   -------------------------------------------------------------------------- */
+.toggle-lock {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-lock .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  transition: all 300ms ease;
+}
+
+.toggle-lock .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-outline);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease, color 300ms ease;
+}
+
+.toggle-lock .thumb .material-symbols-rounded {
+  font-size: 16px;
+}
+
+.toggle-lock input:checked + .track {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.toggle-lock input:checked + .track .thumb {
+  transform: translateX(28px);
+  color: #10b981;
+}
+
+/* --------------------------------------------------------------------------
+   21. Wifi Signal Broadcast Switch
+   Radiating signal waves
+   -------------------------------------------------------------------------- */
+.toggle-wifi {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-wifi .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  transition: all 300ms ease;
+}
+
+.toggle-wifi .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-outline);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), color 300ms ease;
+}
+
+.toggle-wifi .thumb .material-symbols-rounded {
+  font-size: 16px;
+}
+
+.toggle-wifi input:checked + .track {
+  background: var(--google-blue);
+  border-color: var(--google-blue);
+}
+
+.toggle-wifi input:checked + .track .thumb {
+  transform: translateX(28px);
+  color: var(--google-blue);
+}
+
+/* --------------------------------------------------------------------------
+   22. Bouncy Glass Marble Switch
+   Refraction and physics bounce
+   -------------------------------------------------------------------------- */
+.toggle-marble {
+  width: 62px;
+  height: 32px;
+}
+
+.toggle-marble .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #cbd5e1;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background 350ms ease;
+}
+
+[data-theme="dark"] .toggle-marble .track {
+  background: #334155;
+}
+
+.toggle-marble .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #94a3b8 70%, #64748b 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: transform 450ms cubic-bezier(0.34, 1.7, 0.64, 1);
+}
+
+.toggle-marble input:checked + .track {
+  background: #93c5fd;
+}
+
+[data-theme="dark"] .toggle-marble input:checked + .track {
+  background: #1e3a8a;
+}
+
+.toggle-marble input:checked + .track .thumb {
+  transform: translateX(30px);
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #60a5fa 70%, #2563eb 100%);
+}
+
+/* --------------------------------------------------------------------------
+   23. Rainbow Holographic Shift Switch
+   Flowing spectrum iridescent gradient
+   -------------------------------------------------------------------------- */
+.toggle-gradient {
+  width: 64px;
+  height: 34px;
+}
+
+.toggle-gradient .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #a855f7, #ec4899, #f97316);
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.25);
+  transition: background-position 500ms ease;
+}
+
+.toggle-gradient .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-gradient input:checked + .track {
+  background-position: 100% 50%;
+  box-shadow: 0 3px 12px rgba(249, 115, 22, 0.4);
+}
+
+.toggle-gradient input:checked + .track .thumb {
+  transform: translateX(30px);
+}
+
+/* --------------------------------------------------------------------------
+   24. Steaming Hot Coffee Switch
+   Cold empty cup to steaming warm coffee
+   -------------------------------------------------------------------------- */
+.toggle-coffee {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-coffee .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #e5e7eb;
+  transition: background 300ms ease;
+}
+
+[data-theme="dark"] .toggle-coffee .track {
+  background: #374151;
+}
+
+.toggle-coffee .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease;
+}
+
+.toggle-coffee .thumb .material-symbols-rounded {
+  font-size: 16px;
+}
+
+.toggle-coffee input:checked + .track {
+  background: #fde68a;
+}
+
+[data-theme="dark"] .toggle-coffee input:checked + .track {
+  background: #78350f;
+}
+
+.toggle-coffee input:checked + .track .thumb {
+  transform: translateX(28px);
+  background: #b45309;
+}
+
+/* --------------------------------------------------------------------------
+   25. Google Workspace Theme Switcher
+   Google Dark/Light mode switch
+   -------------------------------------------------------------------------- */
+.toggle-workspace {
+  width: 58px;
+  height: 32px;
+}
+
+.toggle-workspace .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #f1f3f4;
+  border: 1px solid #dadce0;
+  transition: all 300ms ease;
+}
+
+[data-theme="dark"] .toggle-workspace .track {
+  background: #303134;
+  border-color: #5f6368;
+}
+
+.toggle-workspace .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ea4335;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease, color 300ms ease;
+}
+
+.toggle-workspace .thumb .material-symbols-rounded {
+  font-size: 16px;
+  transition: transform 400ms ease;
+}
+
+.toggle-workspace input:checked + .track {
+  background: #202124;
+  border-color: #5f6368;
+}
+
+.toggle-workspace input:checked + .track .thumb {
+  transform: translateX(26px);
+  background: #3c4043;
+  color: #8ab4f8;
+}
+
+.toggle-workspace input:checked + .track .thumb .material-symbols-rounded {
+  transform: rotate(360deg);
+}
+
+/* --------------------------------------------------------------------------
+   26. Tactile Thumb Slider Switch
+   Grip ridges and tactile surface
+   -------------------------------------------------------------------------- */
+.toggle-tactile {
+  width: 60px;
+  height: 32px;
+}
+
+.toggle-tactile .track {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: #e2e8f0;
+  border: 2px solid #cbd5e1;
+  transition: all 250ms ease;
+}
+
+[data-theme="dark"] .toggle-tactile .track {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.toggle-tactile .thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: transform 300ms cubic-bezier(0.2, 0, 0, 1), background 250ms ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-tactile .ridge {
+  width: 2px;
+  height: 12px;
+  background: #94a3b8;
+  border-radius: 1px;
+}
+
+.toggle-tactile input:checked + .track {
+  background: var(--md-sys-color-primary-container);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-tactile input:checked + .track .thumb {
+  transform: translateX(28px);
+  border-color: var(--md-sys-color-primary);
+}
+
+.toggle-tactile input:checked + .track .ridge {
+  background: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   27. Morphing Checkmark / Cross Button
+   Pill switch with spinning morphing status icon
+   -------------------------------------------------------------------------- */
+.toggle-morph {
+  width: 64px;
+  height: 34px;
+}
+
+.toggle-morph .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface-container-highest);
+  transition: background 300ms ease;
+}
+
+.toggle-morph .thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--md-sys-color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), background 300ms ease;
+  color: var(--md-sys-color-outline);
+}
+
+.toggle-morph .thumb .material-symbols-rounded {
+  font-size: 16px;
+  transition: transform 350ms ease, opacity 200ms ease;
+}
+
+.toggle-morph input:checked + .track {
+  background: var(--md-sys-color-primary);
+}
+
+.toggle-morph input:checked + .track .thumb {
+  transform: translateX(30px);
+  color: var(--md-sys-color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   28. Fluid Lava Blob Switch
+   Smooth morphing liquid bubble feel
+   -------------------------------------------------------------------------- */
+.toggle-lava {
+  width: 64px;
+  height: 32px;
+}
+
+.toggle-lava .track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: #cbd5e1;
+  transition: background 400ms ease;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .toggle-lava .track {
+  background: #334155;
+}
+
+.toggle-lava .thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50% 45% 50% 45%;
+  background: #64748b;
+  transition: transform 500ms cubic-bezier(0.68, -0.55, 0.27, 1.55), border-radius 400ms ease, background 400ms ease;
+}
+
+.toggle-lava input:checked + .track {
+  background: #fed7aa;
+}
+
+[data-theme="dark"] .toggle-lava input:checked + .track {
+  background: #7c2d12;
+}
+
+.toggle-lava input:checked + .track .thumb {
+  transform: translateX(32px);
+  border-radius: 45% 50% 45% 50%;
+  background: #ea580c;
+}

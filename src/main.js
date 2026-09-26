@@ -2,6 +2,7 @@
 // Faithfully modeled on Ground News Multi-Column Architecture & Media Literacy Engine
 
 import { store } from './modules/state.js';
+import './ui-library/audio.js'; // Toggle UI Library Sound Engine
 import { renderHomeFeedView, renderLocalFeedView } from './modules/homeFeed.js';
 import { renderHeadlineMatrix } from './modules/headlineMatrix.js';
 import { renderBlindspotRadar } from './modules/blindspotRadar.js';
@@ -50,6 +51,10 @@ const themeIconDark = document.getElementById('themeIconDark');
 const themeIconLight = document.getElementById('themeIconLight');
 const bookmarksNavBtn = document.getElementById('bookmarksNavBtn');
 const bookmarksCounterBadge = document.getElementById('bookmarksCounterBadge');
+const soundToggleBtn = document.getElementById('soundToggleBtn');
+const soundIcon = document.getElementById('soundIcon');
+const paletteBtn = document.getElementById('paletteBtn');
+const paletteMenu = document.getElementById('paletteMenu');
 
 // Filter Stories based on category, search, and bookmarks
 // Curated stories have been removed - every story now comes from the wire.
@@ -193,6 +198,8 @@ function render() {
           bookmarksOnly: showBookmarksOnly,
           bookmarkedIds: state.bookmarks
         });
+        // Init the briefing carousel after each feed render
+        requestAnimationFrame(() => initCarousel(document.getElementById('briefingCarousel')));
         break;
     }
   }
@@ -397,8 +404,95 @@ document.addEventListener('click', (e) => {
       }
       break;
     }
+
+    case 'carousel-prev': {
+      const c = document.getElementById(target.dataset.target);
+      if (c) carouselStep(c, -1);
+      break;
+    }
+
+    case 'carousel-next': {
+      const c = document.getElementById(target.dataset.target);
+      if (c) carouselStep(c, +1);
+      break;
+    }
+
+    case 'carousel-goto': {
+      const c = document.getElementById(target.dataset.target);
+      if (c) carouselGoTo(c, Number(target.dataset.slide));
+      break;
+    }
   }
 });
+
+// ── Briefing Carousel ────────────────────────────────────────────────────────
+// Lightweight, self-contained carousel. No dependencies.
+// Tracks state per-element so multiple instances on one page are independent.
+
+const carouselState = new Map(); // carouselEl -> { current, count, autoTimer }
+
+function carouselGetState(el) {
+  if (!carouselState.has(el)) {
+    const count = Number(el.dataset.count) || 1;
+    carouselState.set(el, { current: 0, count });
+  }
+  return carouselState.get(el);
+}
+
+function carouselGoTo(el, index) {
+  const state = carouselGetState(el);
+  state.current = ((index % state.count) + state.count) % state.count;
+  const track = el.querySelector('.briefing-carousel-track');
+  if (track) track.style.transform = `translateX(-${state.current * 100}%)`;
+  // Update dots
+  el.querySelectorAll('.briefing-carousel-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === state.current);
+    dot.setAttribute('aria-selected', String(i === state.current));
+  });
+  // Update counter
+  const counter = el.querySelector('[id$="CarouselCurrent"]');
+  if (counter) counter.textContent = state.current + 1;
+  // Pause & restart auto-play
+  carouselRestartAuto(el);
+}
+
+function carouselStep(el, delta) {
+  const state = carouselGetState(el);
+  carouselGoTo(el, state.current + delta);
+}
+
+function carouselRestartAuto(el) {
+  const state = carouselGetState(el);
+  if (state.autoTimer) clearInterval(state.autoTimer);
+  if (state.count < 2) return;
+  state.autoTimer = setInterval(() => carouselStep(el, +1), 5000);
+}
+
+function initCarousel(el) {
+  if (!el) return;
+  // Reset state on re-render
+  carouselState.delete(el);
+  carouselGoTo(el, 0);
+  carouselRestartAuto(el);
+  // Pause on hover
+  el.addEventListener('mouseenter', () => {
+    const s = carouselGetState(el);
+    if (s.autoTimer) { clearInterval(s.autoTimer); s.autoTimer = null; }
+  }, { passive: true });
+  el.addEventListener('mouseleave', () => carouselRestartAuto(el), { passive: true });
+  // Touch / swipe support
+  let touchStartX = 0;
+  el.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  el.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) carouselStep(el, dx < 0 ? +1 : -1);
+  }, { passive: true });
+  // Keyboard support
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') carouselStep(el, -1);
+    if (e.key === 'ArrowRight') carouselStep(el, +1);
+  });
+}
 
 // Newsletter signups + local city form submissions
 document.addEventListener('submit', (e) => {
@@ -470,14 +564,101 @@ clearSearchBtn.addEventListener('click', () => {
   globalSearchInput.focus();
 });
 
-// Theme switcher
+// Sound engine initialization & toggle button
+function updateSoundIcon() {
+  if (soundIcon && window.soundEngine) {
+    soundIcon.textContent = window.soundEngine.enabled ? 'volume_up' : 'volume_off';
+    soundToggleBtn?.classList.toggle('active', window.soundEngine.enabled);
+  }
+}
+updateSoundIcon();
+
+soundToggleBtn?.addEventListener('click', () => {
+  if (window.soundEngine) {
+    const isEnabled = window.soundEngine.toggleSound();
+    updateSoundIcon();
+    showKeyboardHint(isEnabled ? 'Sound Feedback: ON' : 'Sound Feedback: OFF');
+  }
+});
+
+// Dynamic Material You Accent Color Picker
+function applyPalette(h, s, l) {
+  document.documentElement.style.setProperty('--md-primary-h', h);
+  document.documentElement.style.setProperty('--md-primary-s', s);
+  document.documentElement.style.setProperty('--md-primary-l', l);
+  localStorage.setItem('toggle_palette_accent', JSON.stringify({ h, s, l }));
+}
+
+// Load saved palette accent if any
+try {
+  const savedPalette = JSON.parse(localStorage.getItem('toggle_palette_accent') || 'null');
+  if (savedPalette) {
+    applyPalette(savedPalette.h, savedPalette.s, savedPalette.l);
+    document.querySelectorAll('.color-swatch').forEach(swatch => {
+      swatch.classList.toggle('active', swatch.dataset.h === String(savedPalette.h));
+    });
+  }
+} catch (e) {}
+
+paletteBtn?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  paletteMenu?.classList.toggle('hidden');
+  window.soundEngine?.playSpring();
+});
+
+document.addEventListener('click', (e) => {
+  if (paletteMenu && !paletteMenu.contains(e.target) && e.target !== paletteBtn) {
+    paletteMenu.classList.add('hidden');
+  }
+});
+
+paletteMenu?.addEventListener('click', (e) => {
+  const swatch = e.target.closest('.color-swatch');
+  if (!swatch) return;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  swatch.classList.add('active');
+  applyPalette(swatch.dataset.h, swatch.dataset.s, swatch.dataset.l);
+  window.soundEngine?.playToggle(true);
+  showKeyboardHint(`Accent: ${swatch.dataset.name || 'Selected'}`);
+  paletteMenu.classList.add('hidden');
+});
+
+// Theme switcher with tactile sound
 themeToggleBtn.addEventListener('click', () => {
   const currentTheme = store.getState().theme;
-  store.setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  store.setTheme(nextTheme);
+  window.soundEngine?.playToggle(nextTheme === 'dark');
+});
+
+// Global tactile feedback for buttons, chips, tabs, and bookmarks
+document.addEventListener('click', (e) => {
+  const interactive = e.target.closest('button, .gn-top-link, .gn-cat-tab, .gn-live-chip, .gn-wire-card-bookmark, .gn-wire-card, .briefing-interactive-card, .toggle-btn');
+  if (interactive && window.soundEngine) {
+    window.soundEngine.playToggle(true);
+  }
 });
 
 // ── Keyboard Shortcuts ─────────────────────────────────────────────────────
 document.addEventListener('keydown', (e) => {
+  // Global search shortcut: Ctrl+K or Cmd+K
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    globalSearchInput?.focus();
+    window.soundEngine?.playSpring();
+    return;
+  }
+  // Slash shortcut for search when outside inputs
+  if (e.key === '/' && document.activeElement !== globalSearchInput) {
+    const activeTag = document.activeElement?.tagName?.toLowerCase();
+    if (activeTag !== 'input' && activeTag !== 'textarea') {
+      e.preventDefault();
+      globalSearchInput?.focus();
+      window.soundEngine?.playSpring();
+      return;
+    }
+  }
+
   // Skip if focus is inside an input, textarea, or contenteditable
   const tag = document.activeElement?.tagName?.toLowerCase();
   if (tag === 'input' || tag === 'textarea' || document.activeElement?.isContentEditable) return;

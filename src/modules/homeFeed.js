@@ -17,40 +17,49 @@ import {
 } from './liveFeed.js';
 import { renderLocalNewsWidget } from './localNews.js';
 
-const BRIEFING_SIZE = 3;
+const BRIEFING_SIZE = 5;
 const CARD_SLOTS = ['left', 'center', 'right'];
 
-function renderBriefingCard(story, slot) {
+function renderBriefingCard(story, index) {
   const { rating } = story;
   const showSnippet = Boolean(story.neutralSummary) && story.neutralSummary !== story.title;
+  const imgSrc = story.heroImage || story.image_url || story.imageUrl || story.image || story.thumbnail || '';
 
   return `
-    <article class="briefing-col-${slot} briefing-interactive-card" data-action="open-modal" data-story-id="${story.id}">
-      <div class="briefing-card-media">
-        ${story.heroImage
-          ? `<img src="${escapeHtml(story.heroImage)}" alt="" loading="lazy" decoding="async"
+    <article class="briefing-carousel-slide" data-slide="${index}" data-action="open-modal" data-story-id="${story.id}" aria-label="Story ${index + 1}">
+      <div class="briefing-slide-media">
+        ${imgSrc
+          ? `<img src="${escapeHtml(imgSrc)}" alt="" loading="eager" decoding="async" referrerpolicy="no-referrer"
                   onerror="this.style.display='none';var m=this.nextElementSibling;if(m)m.style.display='flex';" />
              ${renderOutletMonogram(rating, 'gn-briefing-monogram')}`
           : renderOutletMonogram(rating, 'gn-briefing-monogram')}
       </div>
 
-      <div class="briefing-card-content">
-        <div class="briefing-card-metaline">
-          <span class="gn-cat-tag">${escapeHtml(story.category)}</span>
+      <div class="briefing-slide-overlay"></div>
+
+      <div class="briefing-slide-content">
+        <div class="briefing-slide-meta">
+          ${story.isFresh ? '<span class="gn-live-new">New</span>' : ''}
+          <span class="briefing-slide-cat">${escapeHtml(story.category)}</span>
           <span class="gn-sep">&middot;</span>
-          <span class="gn-live-outlet">${escapeHtml(rating.publisher)}</span>
+          <span class="briefing-slide-outlet">
+            <span class="gn-live-outlet-dot${rating.hasLean ? ` ${rating.bucket}` : ''}"></span>
+            ${escapeHtml(rating.publisher)}
+          </span>
           <span class="gn-sep">&middot;</span>
-          <span class="gn-row-time">${escapeHtml(story.timestamp)}</span>
+          <span class="briefing-slide-time">${escapeHtml(story.timestamp)}</span>
         </div>
 
-        <h3 class="briefing-card-title">${escapeHtml(story.title)}</h3>
-        ${showSnippet ? `<p class="briefing-card-snippet">${escapeHtml(story.neutralSummary)}</p>` : ''}
+        <h3 class="briefing-slide-title">${escapeHtml(story.title)}</h3>
+        ${showSnippet ? `<p class="briefing-slide-snippet">${escapeHtml(story.neutralSummary)}</p>` : ''}
 
-        ${renderCoverageBlock(story)}
-
-        <div class="briefing-card-footer">
+        <div class="briefing-slide-footer">
           ${renderBiasTag(rating)}
           ${rating.factuality ? `<span class="gn-live-fact">${escapeHtml(rating.factuality)}</span>` : ''}
+          <span class="briefing-slide-read-cta">
+            Read story
+            <span class="material-symbols-rounded" style="font-size:16px;vertical-align:middle;">arrow_forward</span>
+          </span>
         </div>
       </div>
     </article>
@@ -86,7 +95,7 @@ export function renderCoveragePanel(coverage, liveState = {}) {
   `;
 }
 
-/** Main feed: briefing highlights + the live wire list + a coverage sidebar. */
+/** Main feed: briefing carousel + the live wire list + a coverage sidebar. */
 export function renderHomeFeedView({
   liveStories = [],
   category = 'All',
@@ -98,7 +107,11 @@ export function renderHomeFeedView({
   const filtered = filterLiveStories(liveStories, { category, query })
     .filter(story => !bookmarksOnly || bookmarkedIds.includes(story.id));
 
-  const featured = filtered.slice(0, BRIEFING_SIZE);
+  // Prioritize stories that have an image for the hero carousel display
+  const withImages = filtered.filter(story => Boolean(story.heroImage || story.image_url || story.imageUrl));
+  const withoutImages = filtered.filter(story => !Boolean(story.heroImage || story.image_url || story.imageUrl));
+  const prioritized = [...withImages, ...withoutImages];
+  const featured = prioritized.slice(0, BRIEFING_SIZE);
   const featuredIds = new Set(featured.map(story => story.id));
   const wireList = filtered.filter(story => !featuredIds.has(story.id));
 
@@ -111,8 +124,43 @@ export function renderHomeFeedView({
             <h2 class="briefing-section-title">${bookmarksOnly ? 'Your Saved Articles' : 'Daily Briefing'}</h2>
             <span class="briefing-header-note">Newest articles from the connected wires</span>
           </div>
-          <div class="briefing-trio-grid">
-            ${featured.map((story, index) => renderBriefingCard(story, CARD_SLOTS[index] || 'center')).join('')}
+
+          <div class="briefing-carousel" id="briefingCarousel" data-count="${featured.length}">
+            <!-- Prev Button -->
+            <button class="briefing-carousel-btn briefing-carousel-prev"
+                    data-action="carousel-prev" data-target="briefingCarousel"
+                    aria-label="Previous story">
+              <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+
+            <!-- Slides Viewport -->
+            <div class="briefing-carousel-viewport">
+              <div class="briefing-carousel-track" id="briefingCarouselTrack">
+                ${featured.map((story, i) => renderBriefingCard(story, i)).join('')}
+              </div>
+            </div>
+
+            <!-- Next Button -->
+            <button class="briefing-carousel-btn briefing-carousel-next"
+                    data-action="carousel-next" data-target="briefingCarousel"
+                    aria-label="Next story">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </button>
+
+            <!-- Dot Indicators -->
+            <div class="briefing-carousel-dots" role="tablist" aria-label="Story indicators">
+              ${featured.map((_, i) => `
+                <button class="briefing-carousel-dot ${i === 0 ? 'active' : ''}"
+                        role="tab" aria-selected="${i === 0}"
+                        data-action="carousel-goto" data-target="briefingCarousel"
+                        data-slide="${i}" aria-label="Go to story ${i + 1}">
+                </button>`).join('')}
+            </div>
+
+            <!-- Slide Counter -->
+            <div class="briefing-carousel-counter" aria-live="polite" aria-atomic="true">
+              <span id="briefingCarouselCurrent">1</span> / ${featured.length}
+            </div>
           </div>
         </section>` : ''}
 
