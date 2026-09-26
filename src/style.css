@@ -315,12 +315,18 @@ img {
   justify-content: space-between;
   align-items: center;
   gap: 20px;
+  /* The controls wrap instead of running off the right edge — without this the
+     "Log in" button leaves the viewport below ~1180px (e.g. a 1366px laptop at
+     125% zoom) and can no longer be clicked at all. */
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 
 .gn-header-left {
   display: flex;
   align-items: center;
   gap: 28px;
+  min-width: 0;
 }
 
 .gn-brand {
@@ -390,10 +396,24 @@ img {
   letter-spacing: 0.3px;
 }
 
+/* Narrow windows (small laptops, zoomed-in browsers, snapped windows): the topic
+   nav wraps under the brand so the search box and account controls stay inside
+   the viewport. */
+@media (max-width: 1080px) {
+  .gn-header-main { padding: 10px 14px; gap: 10px 12px; }
+  .gn-header-left { flex-wrap: wrap; gap: 8px 18px; }
+  .gn-top-nav-links { flex-wrap: wrap; }
+}
+
 .gn-header-right {
   display: flex;
   align-items: center;
   gap: 12px;
+  /* Wrap and right-align: the account controls must always stay reachable. */
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
+  min-width: 0;
 }
 
 .gn-search-box {
@@ -405,10 +425,13 @@ img {
   border-radius: var(--radius-full);
   padding: 5px 14px;
   width: 190px;
+  min-width: 110px;      /* shrinkable, so it cannot push the controls off-screen */
+  max-width: 100%;
   transition: width var(--transition-standard), border-color var(--transition-fast);
 }
 .gn-search-box:focus-within {
   width: 270px;
+  max-width: 100%;
   border-color: var(--g-primary);
   background-color: var(--g-surface);
 }
@@ -472,6 +495,9 @@ img {
 }
 
 .gn-login-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-google);
   font-size: 0.82rem;
   font-weight: 600;
@@ -479,6 +505,7 @@ img {
   background: none;
   border: none;
   cursor: pointer;
+  text-decoration: none;
   padding: 6px 8px;
   white-space: nowrap;
 }
@@ -6877,6 +6904,9 @@ img {
   color: var(--g-text, #eee);
   font-weight: 600;
   font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
 
 /* ==========================================================================
    ACCOUNT OVERLAYS — Sign in / Subscribe / Edition picker
@@ -7037,9 +7067,60 @@ img {
 
 .acct-actions-row { display: flex; gap: 12px; flex-wrap: wrap; }
 
-  cursor: pointer;
-  transition: background 0.2s;
+/* SSO hand-off panel (credentials live on the Toggle Account service) */
+.acct-secondary-btn.full { width: 100%; }
+.acct-secondary-btn:disabled,
+.acct-primary-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: none;
 }
+.acct-provider {
+  margin: 2px 0 0;
+  font-family: var(--font-google);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--g-text-muted);
+}
+.acct-sso-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.acct-sso-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 14px;
+  position: relative;
+}
+.acct-sso-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--g-primary);
+}
+.acct-sso-list strong {
+  font-family: var(--font-google);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--g-text-primary);
+}
+.acct-sso-list span {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--g-text-muted);
+}
+
 .ig-signup-btn:hover { background: rgba(255, 255, 255, 0.28); }
 [data-theme="light"] .ig-signup-btn { background: #d5d5d5; color: #222; }
 

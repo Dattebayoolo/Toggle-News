@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
+    "auth:stand-in": "node src/auth/devStandIn.js",
     "fetch-once": "node src/runOnce.js"
   },
   "dependencies": {

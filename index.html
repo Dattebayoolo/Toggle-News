@@ -100,8 +100,9 @@
         <!-- Subscribe Pill Button -->
         <button class="gn-subscribe-pill-btn">Subscribe</button>
 
-        <!-- Log In -->
-        <button class="gn-login-text-btn">Log in</button>
+        <!-- Log In — opens the Toggle Account panel; href is the no-JS fallback -->
+        <a class="gn-login-text-btn" id="navLoginBtn" href="/auth/login"
+           data-action="open-account" data-view="signin">Log in</a>
 
         <!-- Flag / Edition -->
         <button class="gn-country-flag-btn" title="Edition: United States">🇺🇸</button>

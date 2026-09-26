@@ -25,6 +25,26 @@ export default defineConfig({
           });
         },
       },
+      // Toggle Account SSO lives on the news server too (it owns the session
+      // cookies), so the browser keeps a single origin (:5173) throughout the
+      // sign-in redirect chain.
+      '/auth': {
+        target: 'http://localhost:8787',
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (err, req, res) => {
+            if (res && !res.headersSent && typeof res.writeHead === 'function') {
+              res.writeHead(503, { 'Content-Type': 'application/json' });
+              res.end(
+                JSON.stringify({
+                  error: 'auth_unreachable',
+                  message: 'The Toggle News server (which brokers Toggle Account sign-in) is not running on http://localhost:8787.'
+                })
+              );
+            }
+          });
+        },
+      },
     },
   },
 });

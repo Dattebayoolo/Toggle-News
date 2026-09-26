@@ -18,6 +18,7 @@ import {
   getInitials,
   getPlan
 } from './modules/accountModals.js';
+import { refreshAccountSession } from './modules/accountSession.js';
 import {
   handleLocalCitySubmit,
   openLocationPicker,
@@ -353,6 +354,16 @@ document.addEventListener('click', (e) => {
       openAccountModal('signin', render);
       break;
 
+    case 'open-account': {
+      // Navbar "Log in" (an <a href="/auth/login"> with data-action): open the
+      // Toggle Account panel and suppress the fallback navigation. If this script
+      // never runs, the href still takes the browser to the SSO entry point, so
+      // the control can never be inert.
+      e.preventDefault();
+      openAccountModal(target.dataset.view || 'signin', render);
+      break;
+    }
+
     case 'open-edition':
       openAccountModal('edition', render);
       break;
@@ -415,7 +426,9 @@ document.addEventListener('click', (e) => {
 
   const loginBtn = e.target.closest('.gn-login-text-btn');
   if (loginBtn) {
-    openAccountModal('signin', render);
+    // The delegated action handler already opened the panel for the data-action
+    // link; this only covers older markup that had no action attribute.
+    if (!loginBtn.dataset.action) openAccountModal('signin', render);
     return;
   }
 
@@ -690,6 +703,21 @@ mountFooterNewsletter();
 // Live wire: pull real articles from the API, then re-render on every update.
 subscribeLiveFeed(() => render());
 refreshLiveFeed();
+
+// Toggle Account session: ask the news API who is signed in (the access token
+// lives in an httpOnly cookie, so the page cannot read it directly). Signing in
+// and out both come back through this call, which keeps the header honest.
+refreshAccountSession().then(() => {
+  render();
+
+  // Returning from the auth service after the reader declined consent.
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('auth') === 'declined') {
+    openAccountModal('signin', render);
+    // Drop the marker so a reload does not re-open the dialog.
+    window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+  }
+});
 
 // Apply hash on initial load
 applyHashToState();

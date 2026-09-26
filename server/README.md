@@ -190,6 +190,65 @@ decodes entities, and caps the result.
 - Measured on the first 25 articles: **23 bodies stored** (BBC, Guardian, TechCrunch, Hacker News
   links); the 2 misses were pages with no server-rendered body.
 
+## Toggle Account (SSO)
+
+Toggle News signs readers in through the **Toggle Account System** — the central
+OAuth2/OIDC-style service that also serves Toggle Docs, Calendar, Mail and Contacts.
+Toggle News is registered there as the `toggle-news` client; this server is the one
+that owns the session cookies, so the browser never handles an access token.
+
+| Route | Purpose |
+|---|---|
+| `GET /auth/login` | state + PKCE (S256), then redirect to the account service's hosted sign-in |
+| `GET /auth/callback` | verifies `state` against its cookie, exchanges the code at `/token`, stores tokens httpOnly |
+| `GET /auth/session` | who is signed in — verifies the access token locally, silently refreshes when it expired |
+| `POST /auth/logout` | clears local cookies; `?federated=1` also ends the central session |
+| `GET /api/me` | protected example endpoint (cookie session or `Authorization: Bearer`) |
+
+How it fits together:
+
+- **Tokens are verified locally.** `src/auth/tokenVerifier.js` reads the service's
+  `/.well-known/jwks.json`, caches the keys, retries once on a signature mismatch
+  (key rotation), and checks `iss`/`aud`/`exp` with `node:crypto` only — no shared
+  secret, no call to the auth service on the hot path.
+- **Access tokens live 15 minutes**, refresh tokens rotate on every use. The
+  refresh cookie drives silent renewal inside `/auth/session`; a replayed refresh
+  token fails, which is why concurrent renewals are serialised in-process.
+- **Reading never needs an account.** Every `/api/articles` route stays public; a
+  sign-in failure only leaves the reader signed out.
+
+### Configuration (see `.env.example`)
+
+```bash
+AUTH_BASE_URL=http://localhost:4000
+TOGGLE_NEWS_CLIENT_ID=toggle-news
+TOGGLE_NEWS_APP_ORIGIN=http://localhost:5173
+```
+
+`TOGGLE_NEWS_REDIRECT_URI` defaults to `${APP_ORIGIN}/auth/callback` and must match
+the client registration in the account system (`src/common/clients.js`) exactly.
+In development the browser origin is Vite (:5173), which proxies `/auth` and `/api`
+to this server, so the whole redirect chain stays on one origin.
+
+### Running it
+
+The real auth service needs **PostgreSQL** (Node 20+):
+
+```bash
+cd ../Toggle Account\ System
+cp .env.example .env          # set DATABASE_URL, JWT_* keys
+npm install && npm start:auth # http://localhost:4000
+```
+
+On a machine without PostgreSQL, Toggle News ships a **development stand-in** that
+speaks the same three endpoints (`/authorize`, `/token`, `/.well-known/jwks.json`)
+and approves every request as a demo user — enough to exercise the whole flow
+locally. It authenticates nobody, so never run it in production:
+
+```bash
+npm run auth:stand-in         # http://localhost:4000 (stand-in)
+```
+
 ## API
 
 - `GET /api/articles?category=&source=&page=1&pageSize=25` — paginated articles, newest first (pageSize max 100). The list payload stays lean: it carries `has_content` instead of every article's full text.

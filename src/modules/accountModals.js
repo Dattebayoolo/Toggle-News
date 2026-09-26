@@ -4,6 +4,7 @@
 // overlay modules (audio player, AI chat drawer, outlet dossier).
 
 import { store } from './state.js';
+import { getAuthState, signOutAccount, startSignIn } from './accountSession.js';
 
 export const EDITIONS = [
   { code: 'us', label: 'United States', flag: '🇺🇸' },
@@ -61,7 +62,6 @@ export const PLANS = [
 ];
 
 let activeModal = null;   // 'signin' | 'subscribe' | 'edition'
-let activeTab = 'signin'; // 'signin' | 'create'
 let billingCycle = 'monthly';
 let selectedPlan = 'premium';
 let onChangeCallback = null;
@@ -80,7 +80,6 @@ export function formatPrice(amount) {
 
 export function openAccountModal(kind = 'signin', onChange = null) {
   activeModal = kind;
-  activeTab = store.getState().account ? 'signin' : 'create';
   if (typeof onChange === 'function') onChangeCallback = onChange;
   const plan = store.getState().account?.plan;
   if (plan) selectedPlan = plan;
@@ -95,13 +94,6 @@ export function closeAccountModal() {
 
 function notifyChange() {
   if (typeof onChangeCallback === 'function') onChangeCallback();
-}
-
-function showFieldError(form, message) {
-  const box = form.querySelector('.acct-form-message');
-  if (!box) return;
-  box.textContent = message;
-  box.className = 'acct-form-message error';
 }
 
 function showSuccess(overlay, title, message) {
@@ -175,6 +167,7 @@ function renderSignInBody() {
           <div class="acct-signed-in-meta">
             <h2 class="acct-title">${account.name}</h2>
             <p class="acct-sub">${account.email} &middot; ${getPlan(account.plan).name} plan</p>
+            <p class="acct-provider">Signed in with Toggle Account</p>
           </div>
         </div>
 
@@ -188,53 +181,62 @@ function renderSignInBody() {
           <button class="acct-primary-btn" data-acct-open="subscribe">Manage subscription</button>
           <button class="acct-secondary-btn" data-acct-signout>Sign out</button>
         </div>
+
+        <p class="acct-footnote">
+          Signing out clears this browser.
+          <button class="acct-link-btn" data-acct-signout-federated>Sign out of all Toggle apps</button>
+        </p>
       </div>
     `;
   }
 
+  // Defensive: even if the session probe module is in an unexpected state, the
+  // panel must still render so "Log in" always visibly does something.
+  let auth = { status: 'unknown' };
+  try {
+    auth = getAuthState() || auth;
+  } catch {
+    /* keep the default */
+  }
+
+  const declined = typeof window !== 'undefined'
+    && String((window.location && window.location.search) || '').includes('auth=declined');
+  const unavailable = auth.status === 'unavailable';
+
   return `
     <div class="acct-body">
-      <div class="acct-tabs" role="tablist">
-        <button class="acct-tab ${activeTab === 'signin' ? 'active' : ''}" data-acct-tab="signin" role="tab">Sign in</button>
-        <button class="acct-tab ${activeTab === 'create' ? 'active' : ''}" data-acct-tab="create" role="tab">Create account</button>
-      </div>
-
-      <h2 class="acct-title">${activeTab === 'create' ? 'Create your free account' : 'Welcome back'}</h2>
+      <h2 class="acct-title">Log in with Toggle Account</h2>
       <p class="acct-sub">
-        ${activeTab === 'create'
-          ? 'Track your news diet, save stories, and follow topics across the political spectrum.'
-          : 'Sign in to sync your saved stories and blindspot reports.'}
+        One account for every Toggle app. Signing in syncs your saved stories, followed topics
+        and news-diet history across devices.
       </p>
 
-      <form class="acct-form" novalidate>
-        ${activeTab === 'create' ? `
-        <label class="acct-field">
-          <span class="acct-label">Full name</span>
-          <input class="acct-input" type="text" name="name" placeholder="Jordan Rivera" autocomplete="name" />
-        </label>` : ''}
+      ${declined ? '<p class="acct-form-message error" role="status">Sign-in was cancelled. Nothing was changed.</p>' : ''}
+      ${unavailable ? '<p class="acct-form-message error" role="status">Could not reach the Toggle Account service just now. You can still try signing in — or keep reading without an account.</p>' : ''}
 
-        <label class="acct-field">
-          <span class="acct-label">Email address</span>
-          <input class="acct-input" type="email" name="email" placeholder="you@example.com" autocomplete="email" />
-        </label>
+      <button class="acct-primary-btn full" data-acct-sso="signin">
+        Continue with Toggle Account
+      </button>
+      <button class="acct-secondary-btn full" data-acct-sso="switch">
+        Use a different account
+      </button>
 
-        <label class="acct-field">
-          <span class="acct-label">Password</span>
-          <input class="acct-input" type="password" name="password" placeholder="At least 6 characters" autocomplete="${activeTab === 'create' ? 'new-password' : 'current-password'}" />
-        </label>
+      <ul class="acct-sso-list">
+        <li>
+          <strong>Credentials stay on the account service</strong>
+          <span>Sign-in and account creation run on the hosted Toggle Account page — this app never sees your password.</span>
+        </li>
+        <li>
+          <strong>Nothing is shared silently</strong>
+          <span>The account service asks you to approve Toggle News before any profile detail is released.</span>
+        </li>
+        <li>
+          <strong>You keep control</strong>
+          <span>Sign out of this browser, or end the session across every Toggle app, from your account panel.</span>
+        </li>
+      </ul>
 
-        <p class="acct-form-message" role="status"></p>
-
-        <button class="acct-primary-btn full" type="submit">
-          ${activeTab === 'create' ? 'Create account' : 'Sign in'}
-        </button>
-      </form>
-
-      <p class="acct-footnote">
-        ${activeTab === 'create'
-          ? 'Already have an account? <button class="acct-link-btn" data-acct-tab="signin">Sign in</button>'
-          : 'New to Toggle News? <button class="acct-link-btn" data-acct-tab="create">Create an account</button>'}
-      </p>
+      <p class="acct-footnote">New to Toggle? The same page creates an account.</p>
     </div>
   `;
 }
@@ -308,45 +310,22 @@ function renderEditionBody() {
 }
 
 
-function handleSignInSubmit(e, overlay, form) {
-  e.preventDefault();
-  const data = new FormData(form);
-  const email = (data.get('email') || '').trim();
-  const password = data.get('password') || '';
-  const name = (data.get('name') || '').trim();
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-    showFieldError(form, 'Enter a valid email address.');
+/** Hand the browser to the hosted Toggle Account sign-in. */
+function handleSsoAction(kind, overlay) {
+  if (kind === 'switch') {
+    // `prompt=login` makes the auth service ask for credentials again even when
+    // a central session is already open, so a different person can sign in.
+    startSignIn({ promptLogin: true });
     return;
   }
-  if (password.length < 6) {
-    showFieldError(form, 'Password must be at least 6 characters.');
-    return;
-  }
-  if (activeTab === 'create' && name.length < 2) {
-    showFieldError(form, 'Add your name so we can personalise your feed.');
-    return;
-  }
-
-  const displayName = name || email.split('@')[0]
-    .replace(/[._-]+/g, ' ')
-    .replace(/\b\w/g, c => c.toUpperCase());
-
-  store.setAccount({ email, name: displayName, plan: selectedPlan });
-  notifyChange();
-  showSuccess(
-    overlay,
-    activeTab === 'create' ? `Welcome, ${displayName}` : `Welcome back, ${displayName}`,
-    `${getPlan(selectedPlan).name} plan active &middot; ${email}`
-  );
+  startSignIn();
+  showSuccess(overlay, 'Redirecting to Toggle Account', 'The sign-in page opens on the account service.');
 }
 
 function attachAccountModalEvents(overlay) {
-  overlay.querySelectorAll('[data-acct-tab]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeTab = btn.dataset.acctTab;
-      renderAccountModal();
-    });
+  // Sign-in / "use a different account" hand off to the hosted Toggle Account UI.
+  overlay.querySelectorAll('[data-acct-sso]').forEach(btn => {
+    btn.addEventListener('click', () => handleSsoAction(btn.dataset.acctSso, overlay));
   });
 
   overlay.querySelectorAll('[data-acct-cycle]').forEach(btn => {
@@ -367,11 +346,9 @@ function attachAccountModalEvents(overlay) {
   if (chooseBtn) {
     chooseBtn.addEventListener('click', () => {
       if (!store.getState().account) {
+        // Plans activate after sign-in; show the account hand-off instead.
         activeModal = 'signin';
-        activeTab = 'create';
         renderAccountModal();
-        const msg = document.querySelector('#account-modal-overlay .acct-form-message');
-        if (msg) msg.textContent = `Create an account to activate the ${getPlan(selectedPlan).name} plan.`;
         return;
       }
       store.setSubscriptionPlan(selectedPlan);
@@ -398,15 +375,22 @@ function attachAccountModalEvents(overlay) {
     });
   });
 
-  const form = overlay.querySelector('.acct-form');
-  if (form) form.addEventListener('submit', (e) => handleSignInSubmit(e, overlay, form));
-
   const signOutBtn = overlay.querySelector('[data-acct-signout]');
   if (signOutBtn) {
-    signOutBtn.addEventListener('click', () => {
-      store.signOut();
+    signOutBtn.addEventListener('click', async () => {
+      await signOutAccount();
       notifyChange();
       showSuccess(overlay, 'Signed out', 'Your saved stories and history stay on this device.');
+    });
+  }
+
+  const federatedBtn = overlay.querySelector('[data-acct-signout-federated]');
+  if (federatedBtn) {
+    federatedBtn.addEventListener('click', async () => {
+      // Ends the central Toggle Account session too — the page then leaves for
+      // the account service, which confirms the sign-out.
+      await signOutAccount({ federated: true });
+      notifyChange();
     });
   }
 

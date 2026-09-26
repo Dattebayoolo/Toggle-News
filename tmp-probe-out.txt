@@ -1,0 +1,8 @@
+﻿width x height ΓåÆ button visible/hit  |  modal opened  |  card reachable (top..bottom of viewport h)
+1440x900 ΓåÆ visible:true hit:true (topmost gn-login-text-btn) | opened:true cardReachable:false card:16601..16806 (vp 900) handoff:false scroll:false
+762x800 ΓåÆ visible:true hit:true (topmost gn-login-text-btn) | opened:true cardReachable:false card:24291..24644 (vp 800) handoff:false scroll:false
+762x484 ΓåÆ visible:true hit:true (topmost gn-login-text-btn) | opened:true cardReachable:false card:24291..24644 (vp 484) handoff:false scroll:false
+480x800 ΓåÆ visible:true hit:true (topmost gn-login-text-btn) | opened:true cardReachable:false card:42315..42716 (vp 800) handoff:false scroll:false
+414x736 ΓåÆ visible:true hit:true (topmost gn-login-text-btn) | opened:true cardReachable:false card:43041..43514 (vp 736) handoff:false scroll:false
+380x640 ΓåÆ visible:true hit:true (topmost gn-login-text-btn) | opened:true cardReachable:false card:43771..44268 (vp 640) handoff:false scroll:false
+1280x600 ΓåÆ visible:true hit:true (topmost gn-login-text-btn) | opened:true cardReachable:false card:16714..16919 (vp 600) handoff:false scroll:false

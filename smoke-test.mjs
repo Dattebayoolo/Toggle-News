@@ -561,10 +561,20 @@ check('subscribe modal shows popular badge', subscribeHtml.includes('acct-popula
 
 openAccountModal('signin');
 const signInHtml = created.at(-1).innerHTML;
-check('sign-in modal has email + password fields',
-  signInHtml.includes('name="email"') && signInHtml.includes('name="password"'));
-check('sign-in modal has both tabs',
-  signInHtml.includes('data-acct-tab="signin"') && signInHtml.includes('data-acct-tab="create"'));
+check('sign-in modal hands off to the hosted Toggle Account service',
+  signInHtml.includes('data-acct-sso="signin"') && signInHtml.includes('data-acct-sso="switch"') &&
+  signInHtml.includes('Continue with Toggle Account') &&
+  signInHtml.includes('Credentials stay on the account service') &&
+  !signInHtml.includes('name="password"'));
+check('signed-in account panel shows the session email and real sign-out',
+  (() => {
+    store.setAccount({ id: 'u1', email: 'reader@example.com', name: 'Reader Example', plan: 'free', provider: 'toggle-account' });
+    openAccountModal('signin');
+    const html = created.at(-1).innerHTML;
+    store.signOut();
+    return html.includes('reader@example.com') && html.includes('Signed in with Toggle Account') &&
+      html.includes('data-acct-signout') && html.includes('data-acct-signout-federated');
+  })());
 
 openAccountModal('edition');
 const editionHtml = created.at(-1).innerHTML;
@@ -762,6 +772,69 @@ check('the outlet dossier renders the meter, badge and methodology',
       html.includes('Lean Left') && html.includes('Warner Bros. Discovery') &&
       html.includes('AllSides: Lean Left');
   })());
+
+// ── Toggle Account SSO: PKCE, state cookie, token verification ──────────────
+const nodeCrypto = await import('node:crypto');
+const { createPkcePair, encodeStateCookie, decodeStateCookie } = await import('./server/src/auth/ssoClient.js');
+const { verifyAccessToken, resetJwksCache } = await import('./server/src/auth/tokenVerifier.js');
+
+const { privateKey: testPrivateKey, publicKey: testPublicKey } = nodeCrypto.generateKeyPairSync('rsa', {
+  modulusLength: 2048
+});
+const TEST_KID = 'test-key-1';
+const TEST_ISSUER = 'https://auth.test.local';
+const TEST_AUDIENCE = 'toggle-news';
+const testJwk = { ...testPublicKey.export({ format: 'jwk' }), kid: TEST_KID, use: 'sig', alg: 'RS256' };
+
+function signTestToken({ email = 'reader@example.com', sub = 'user-1', expiresIn = 900, audience = TEST_AUDIENCE, issuer = TEST_ISSUER } = {}) {
+  const b64 = (value) => Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
+  const now = Math.floor(Date.now() / 1000);
+  const input = `${b64({ alg: 'RS256', kid: TEST_KID, typ: 'JWT' })}.${b64({
+    iss: issuer, aud: audience, sub, email, jti: nodeCrypto.randomUUID(), iat: now, exp: now + expiresIn
+  })}`;
+  const signature = nodeCrypto.sign('RSA-SHA256', Buffer.from(input), testPrivateKey).toString('base64url');
+  return `${input}.${signature}`;
+}
+
+const jwksFetch = async () => ({ ok: true, json: async () => ({ keys: [testJwk] }) });
+
+check('PKCE pairs are S256-verifiable and unique per attempt',
+  (() => {
+    const first = createPkcePair();
+    const second = createPkcePair();
+    const expected = nodeCrypto.createHash('sha256').update(first.codeVerifier).digest('base64url');
+    return expected === first.codeChallenge &&
+      first.codeVerifier.length >= 43 && second.codeVerifier !== first.codeVerifier;
+  })());
+check('the OAuth state cookie round-trips state + verifier',
+  (() => {
+    const decoded = decodeStateCookie(encodeStateCookie({ state: 'abc', codeVerifier: 'verifier-123' }));
+    return decoded.state === 'abc' && decoded.codeVerifier === 'verifier-123' &&
+      decodeStateCookie('not-base64-json').state === '';
+  })());
+
+const verifyOptions = { audience: TEST_AUDIENCE, issuer: TEST_ISSUER, authBaseUrl: 'http://auth.test', fetchImpl: jwksFetch };
+const verifyResults = await (async () => {
+  resetJwksCache();
+  const valid = await verifyAccessToken(signTestToken(), verifyOptions);
+  resetJwksCache();
+  const rejected = await Promise.all([
+    verifyAccessToken(`${signTestToken()}x`, verifyOptions).then(() => 'accepted', (e) => e.message),
+    verifyAccessToken(signTestToken({ audience: 'toggle-docs' }), verifyOptions).then(() => 'accepted', (e) => e.message),
+    verifyAccessToken(signTestToken({ issuer: 'https://elsewhere.test' }), verifyOptions).then(() => 'accepted', (e) => e.message),
+    verifyAccessToken(signTestToken({ expiresIn: -60 }), verifyOptions).then(() => 'accepted', (e) => e.message)
+  ]);
+  resetJwksCache();
+  return { valid, rejected };
+})();
+
+check('a service-signed token verifies locally (email + subject survive)',
+  verifyResults.valid.payload.email === 'reader@example.com' && verifyResults.valid.payload.sub === 'user-1');
+check('tampered, mis-scoped and expired tokens are all rejected',
+  verifyResults.rejected[0] === 'signature mismatch' &&
+  /audience/.test(verifyResults.rejected[1]) &&
+  /issuer/.test(verifyResults.rejected[2]) &&
+  verifyResults.rejected[3] === 'token expired');
 
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exitCode = failures === 0 ? 0 : 1;

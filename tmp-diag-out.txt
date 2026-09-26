@@ -1,0 +1,17 @@
+﻿{
+  "ruleFound": false,
+  "overlayPosition": "static",
+  "overlayDisplay": "block",
+  "overlayZIndex": "auto",
+  "overlayTop": "auto",
+  "overlayRect": {
+    "top": 28061,
+    "left": 8,
+    "height": 325
+  },
+  "offsetTop": 28061,
+  "offsetParent": "BODY",
+  "parent": "BODY",
+  "bodyPosition": "static",
+  "offenders": []
+}
