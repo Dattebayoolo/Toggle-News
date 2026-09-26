@@ -51,6 +51,15 @@ export function renderHeadlineMatrixUnavailable() {
   `;
 }
 
+/**
+ * Full framing matrix for curated stories. Curated stories no longer exist, so
+ * the caller passes an empty list and the explanatory state above is shown —
+ * this renderer is kept so the comparison view can be restored once same-event
+ * write-ups are available.
+ */
+export function renderHeadlineMatrix(stories) {
+  if (!stories.length) return renderHeadlineMatrixUnavailable();
+
   return `
     <div class="matrix-container">
       <div class="matrix-header-banner">

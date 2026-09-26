@@ -9,11 +9,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const loaders = {
   rss: async () => (await import('./fetchers/rssFetcher.js')).fetchRss,
   newsapi: async () => (await import('./fetchers/newsApiFetcher.js')).fetchNewsApi,
+  gdelt: async () => (await import('./fetchers/gdeltFetcher.js')).fetchGdelt,
 };
 
 const fetchers = {
   rss: null,
   newsapi: null,
+  gdelt: null,
 };
 
 export function loadSources() {

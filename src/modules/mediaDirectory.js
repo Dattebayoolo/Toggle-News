@@ -1,7 +1,19 @@
 // Media Bias & Factuality Directory with 2D Interactive Scatter Chart
 // Modeled on Ground News and AllSides Media Ratings Chart
+//
+// Ratings themselves come from ./ratingSystem.js — the directory only presents
+// them, so the scale, the buckets and the factuality levels stay identical to
+// what the feed cards and the outlet dossier show.
 
 import { SOURCES } from '../data/sourcesData.js';
+import {
+  ratingFor,
+  factualityLevel,
+  renderBiasMeter,
+  renderFactualityBadge,
+  renderRatingLegend,
+  RATING_METHODOLOGY
+} from './ratingSystem.js';
 
 let activeBiasFilter = 'all';
 let activeFactualityFilter = 'all';
@@ -11,14 +23,11 @@ let selectedSourceForChart = SOURCES[0];
 
 export function renderMediaDirectory() {
   let filtered = SOURCES.filter(s => {
-    // Bias filter
-    if (activeBiasFilter !== 'all') {
-      if (activeBiasFilter === 'left' && s.biasScore > -1) return false;
-      if (activeBiasFilter === 'center' && s.biasScore !== 0) return false;
-      if (activeBiasFilter === 'right' && s.biasScore < 1) return false;
-    }
-    // Factuality filter
-    if (activeFactualityFilter !== 'all' && s.factuality.toLowerCase() !== activeFactualityFilter) {
+    const rating = ratingFor(s);
+    // Bias filter — buckets come from the five-stop scale in the rating system.
+    if (activeBiasFilter !== 'all' && rating.bucket !== activeBiasFilter) return false;
+    // Factuality filter — normalised, so unusual wording still matches.
+    if (activeFactualityFilter !== 'all' && (rating.factuality || '').toLowerCase() !== activeFactualityFilter) {
       return false;
     }
     // Search
@@ -39,7 +48,12 @@ export function renderMediaDirectory() {
           <span>INDEPENDENT THIRD-PARTY AUDIT</span>
         </div>
         <h2>🏢 Media Bias & Reliability Ratings</h2>
-        <p>Ground News aggregates bias and reliability ratings from AllSides, Ad Fontes Media, and Media Bias Fact Check to evaluate over 30 leading global publications.</p>
+        <p>${SOURCES.length} publications on a five-stop bias scale and three factuality levels. ${RATING_METHODOLOGY.sources}</p>
+
+        <details class="dir-legend-details">
+          <summary>How the ratings work</summary>
+          ${renderRatingLegend()}
+        </details>
 
         <!-- View Mode Switcher (Chart vs Grid) -->
         <div class="dir-view-mode-toggle">
@@ -74,6 +88,7 @@ export function renderMediaDirectory() {
               <button class="dir-pill ${activeFactualityFilter === 'all' ? 'active' : ''}" data-dir-fact="all">All</button>
               <button class="dir-pill ${activeFactualityFilter === 'high' ? 'active' : ''}" data-dir-fact="high">High Only</button>
               <button class="dir-pill ${activeFactualityFilter === 'mixed' ? 'active' : ''}" data-dir-fact="mixed">Mixed</button>
+              <button class="dir-pill ${activeFactualityFilter === 'low' ? 'active' : ''}" data-dir-fact="low">Low</button>
             </div>
           </div>
         </div>
@@ -86,6 +101,8 @@ export function renderMediaDirectory() {
 }
 
 function render2DChart(sourcesList) {
+  const selectedRating = selectedSourceForChart ? ratingFor(selectedSourceForChart) : null;
+
   return `
     <div class="gn-2d-chart-container">
       <div class="chart-legend-top">
@@ -108,15 +125,17 @@ function render2DChart(sourcesList) {
         <div class="canvas-y-axis-labels">
           <span class="y-label high">HIGH FACTUALITY</span>
           <span class="y-label mixed">MIXED FACTUALITY</span>
+          <span class="y-label low">LOW FACTUALITY</span>
         </div>
 
         <!-- Dots representing media outlets -->
         <div class="canvas-points-layer">
           ${sourcesList.map(src => {
+            const srcRating = ratingFor(src);
             // Map biasScore (-2 to +2) to X percent (8% to 92%)
             const xPct = ((src.biasScore + 2) / 4) * 84 + 8;
-            // Map factuality to Y percent (High = 22%, Mixed = 72%)
-            const yBase = src.factuality === 'High' ? 22 : 72;
+            // Y position comes from the factuality level's chart row
+            const yBase = factualityLevel(src.factuality)?.chartY ?? 72;
             // Add slight deterministic jitter based on name length to prevent overlap
             const jitterX = ((src.name.length % 5) - 2) * 2.5;
             const jitterY = ((src.founded % 5) - 2) * 3;
@@ -129,7 +148,7 @@ function render2DChart(sourcesList) {
               <div class="chart-outlet-node ${isSelected ? 'selected' : ''}" 
                    style="left: ${finalX}%; top: ${finalY}%; background-color: ${src.color};" 
                    data-chart-source-id="${src.id}" 
-                   title="${src.name} (${src.bias} | ${src.factuality} Factuality)">
+                   title="${src.name} · ${srcRating.biasLabel || 'Unrated'} · ${srcRating.factuality || 'Unrated'} factuality">
                 <span class="node-abbr">${src.logoText}</span>
                 <span class="node-hover-label">${src.name}</span>
               </div>
@@ -140,7 +159,7 @@ function render2DChart(sourcesList) {
 
       <!-- Detail Card for Selected Outlet in Chart -->
       ${selectedSourceForChart ? `
-        <div class="chart-inspector-card">
+        <div class="chart-inspector-card" data-outlet-id="${selectedSourceForChart.id}" title="Open ${selectedSourceForChart.name} dossier">
           <div class="inspector-left">
             <div class="inspector-avatar" style="background-color: ${selectedSourceForChart.color};">
               ${selectedSourceForChart.logoText}
@@ -152,12 +171,8 @@ function render2DChart(sourcesList) {
           </div>
 
           <div class="inspector-badges">
-            <span class="badge-pill bias-${selectedSourceForChart.biasScore < 0 ? 'left' : (selectedSourceForChart.biasScore > 0 ? 'right' : 'center')}">
-              ${selectedSourceForChart.bias}
-            </span>
-            <span class="badge-pill factuality-${selectedSourceForChart.factuality.toLowerCase()}">
-              ${selectedSourceForChart.factuality} Factuality
-            </span>
+            ${renderBiasMeter(selectedRating.biasScore)}
+            ${renderFactualityBadge(selectedRating.factuality, { suffix: ' Factuality' })}
           </div>
 
           <div class="inspector-owner">
@@ -185,12 +200,10 @@ function renderGridView(filtered) {
   return `
     <div class="sources-grid">
       ${filtered.map(source => {
-        let biasClass = 'center';
-        if (source.biasScore <= -1) biasClass = 'left';
-        if (source.biasScore >= 1) biasClass = 'right';
+        const rating = ratingFor(source);
 
         return `
-          <div class="source-card">
+          <div class="source-card" data-outlet-id="${source.id}" title="Open ${source.name} dossier">
             <div class="source-card-top">
               <div class="source-avatar" style="background-color: ${source.color};">
                 ${source.logoText}
@@ -203,16 +216,12 @@ function renderGridView(filtered) {
 
             <div class="source-ratings-strip">
               <div class="rating-badge-item">
-                <span class="badge-mini-label">BIAS RATING</span>
-                <span class="badge-pill bias-${biasClass}">
-                  ${source.bias}
-                </span>
+                <span class="badge-mini-label">BIAS</span>
+                ${renderBiasMeter(rating.biasScore)}
               </div>
               <div class="rating-badge-item">
                 <span class="badge-mini-label">FACTUALITY</span>
-                <span class="badge-pill factuality-${source.factuality.toLowerCase()}">
-                  ${source.factuality}
-                </span>
+                ${renderFactualityBadge(rating.factuality)}
               </div>
             </div>
 

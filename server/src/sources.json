@@ -88,5 +88,47 @@
     "category": "technology",
     "enabled": false,
     "intervalMinutes": 120
+  },
+  {
+    "id": "gdelt-world",
+    "name": "GDELT — Global English coverage",
+    "type": "gdelt",
+    "query": "sourcelang:english",
+    "params": {
+      "maxrecords": 75,
+      "timespan": "1d",
+      "sort": "datedesc"
+    },
+    "category": "world",
+    "enabled": true,
+    "intervalMinutes": 60
+  },
+  {
+    "id": "gdelt-technology",
+    "name": "GDELT — Technology",
+    "type": "gdelt",
+    "query": "sourcelang:english (\"artificial intelligence\" OR semiconductor OR cybersecurity)",
+    "params": {
+      "maxrecords": 50,
+      "timespan": "2d",
+      "sort": "datedesc"
+    },
+    "category": "technology",
+    "enabled": true,
+    "intervalMinutes": 60
+  },
+  {
+    "id": "gdelt-climate",
+    "name": "GDELT — Climate & Energy",
+    "type": "gdelt",
+    "query": "sourcelang:english (\"climate change\" OR emissions OR \"renewable energy\")",
+    "params": {
+      "maxrecords": 50,
+      "timespan": "2d",
+      "sort": "datedesc"
+    },
+    "category": "climate",
+    "enabled": false,
+    "intervalMinutes": 120
   }
 ]

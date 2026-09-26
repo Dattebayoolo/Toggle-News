@@ -1,7 +1,10 @@
 // Blindspot Radar Feed Component
 // Identifies news echo chambers where one side of the political spectrum underreports a story
+//
+// Blindspot classification requires same-event grouping, which wire articles do
+// not have. The radar therefore renders an explicit empty state explaining that
+// rather than presenting sampling noise as a signal.
 
-import { renderBiasBar } from './biasBar.js';
 import { store } from './state.js';
 
 /**

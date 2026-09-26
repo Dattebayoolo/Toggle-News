@@ -10,6 +10,9 @@ import {
   renderLiveWireSection,
   filterLiveStories,
   summarizeCoverage,
+  renderBiasTag,
+  renderCoverageBlock,
+  renderOutletMonogram,
   escapeHtml
 } from './liveFeed.js';
 import { renderLocalNewsWidget } from './localNews.js';
@@ -19,17 +22,36 @@ const CARD_SLOTS = ['left', 'center', 'right'];
 
 function renderBriefingCard(story, slot) {
   const { rating } = story;
+  const showSnippet = Boolean(story.neutralSummary) && story.neutralSummary !== story.title;
+
   return `
     <article class="briefing-col-${slot} briefing-interactive-card" data-action="open-modal" data-story-id="${story.id}">
-      ${story.heroImage
-        ? `<div class="briefing-card-media"><img src="${escapeHtml(story.heroImage)}" alt="" loading="lazy" /></div>`
-        : ''}
+      <div class="briefing-card-media">
+        ${story.heroImage
+          ? `<img src="${escapeHtml(story.heroImage)}" alt="" loading="lazy" decoding="async"
+                  onerror="this.style.display='none';var m=this.nextElementSibling;if(m)m.style.display='flex';" />
+             ${renderOutletMonogram(rating, 'gn-briefing-monogram')}`
+          : renderOutletMonogram(rating, 'gn-briefing-monogram')}
+      </div>
+
       <div class="briefing-card-content">
         <div class="briefing-card-metaline">
-          ${escapeHtml(story.category)} &bull; ${escapeHtml(rating.publisher)} &bull; ${escapeHtml(story.timestamp)}
+          <span class="gn-cat-tag">${escapeHtml(story.category)}</span>
+          <span class="gn-sep">&middot;</span>
+          <span class="gn-live-outlet">${escapeHtml(rating.publisher)}</span>
+          <span class="gn-sep">&middot;</span>
+          <span class="gn-row-time">${escapeHtml(story.timestamp)}</span>
         </div>
+
         <h3 class="briefing-card-title">${escapeHtml(story.title)}</h3>
-        <p class="briefing-card-snippet">${escapeHtml(story.neutralSummary)}</p>
+        ${showSnippet ? `<p class="briefing-card-snippet">${escapeHtml(story.neutralSummary)}</p>` : ''}
+
+        ${renderCoverageBlock(story)}
+
+        <div class="briefing-card-footer">
+          ${renderBiasTag(rating)}
+          ${rating.factuality ? `<span class="gn-live-fact">${escapeHtml(rating.factuality)}</span>` : ''}
+        </div>
       </div>
     </article>
   `;

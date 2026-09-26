@@ -54,6 +54,18 @@ function ensureColumn(table, column, definition) {
 // This must run before the statements below are prepared — SQLite validates
 // column names against the live schema at prepare time.
 ensureColumn('articles', 'publisher', 'TEXT');
+// Set once an image backfill has been attempted, so dead links are not retried forever.
+ensureColumn('articles', 'image_checked_at', 'TEXT');
+// Full article text (paragraphs separated by a blank line) extracted from the
+// publisher page, plus the stamp that records an extraction attempt either way.
+ensureColumn('articles', 'content', 'TEXT');
+ensureColumn('articles', 'content_checked_at', 'TEXT');
+
+// Speed up the "articles still missing an image" backfill query.
+db.exec('CREATE INDEX IF NOT EXISTS idx_articles_image_missing ON articles (id) WHERE image_url IS NULL;');
+
+// Speed up the "articles still missing full text" backfill query.
+db.exec('CREATE INDEX IF NOT EXISTS idx_articles_content_missing ON articles (id) WHERE content IS NULL;');
 
 const insertArticle = db.prepare(`
   INSERT OR IGNORE INTO articles
@@ -66,6 +78,83 @@ const insertLog = db.prepare(`
   INSERT INTO fetch_log (source_id, status, items_fetched, items_new, message)
   VALUES (@sourceId, @status, @itemsFetched, @itemsNew, @message)
 `);
+
+const selectNeedingImages = db.prepare(`
+  SELECT id, url, publisher FROM articles
+  WHERE image_url IS NULL AND image_checked_at IS NULL
+  ORDER BY id DESC
+  LIMIT @limit
+`);
+
+const updateArticleImage = db.prepare(`
+  UPDATE articles
+  SET image_url = @imageUrl, image_checked_at = datetime('now'), updated_at = datetime('now')
+  WHERE id = @id
+`);
+
+const countMissingImages = db.prepare(
+  'SELECT COUNT(1) AS c FROM articles WHERE image_url IS NULL AND image_checked_at IS NULL'
+);
+
+const selectNeedingContent = db.prepare(`
+  SELECT id, url, publisher FROM articles
+  WHERE content IS NULL AND content_checked_at IS NULL
+  ORDER BY id DESC
+  LIMIT @limit
+`);
+
+const updateArticleContent = db.prepare(`
+  UPDATE articles
+  SET content = @content, content_checked_at = datetime('now'), updated_at = datetime('now')
+  WHERE id = @id
+`);
+
+const countMissingContent = db.prepare(
+  'SELECT COUNT(1) AS c FROM articles WHERE content IS NULL AND content_checked_at IS NULL'
+);
+
+const selectArticleById = db.prepare('SELECT * FROM articles WHERE id = @id');
+
+/** Articles whose image has never been attempted, newest first. */
+export function getArticlesNeedingImages({ limit = 20 } = {}) {
+  return selectNeedingImages.all({ limit });
+}
+
+/**
+ * Record an image-backfill result. `imageUrl` may be null when the page carried
+ * no social-preview image — `image_checked_at` is still set so a dead or
+ * image-less link is not retried on every pass.
+ */
+export function setArticleImage(id, imageUrl) {
+  return updateArticleImage.run({ id, imageUrl: imageUrl || null }).changes;
+}
+
+export function countArticlesMissingImages() {
+  return countMissingImages.get().c;
+}
+
+/** Articles whose full text has never been attempted, newest first. */
+export function getArticlesNeedingContent({ limit = 8 } = {}) {
+  return selectNeedingContent.all({ limit });
+}
+
+/**
+ * Record a full-text extraction result. `content` may be null when the page
+ * carried no usable article body — `content_checked_at` is still set so a
+ * paywalled or dead link is not retried on every pass.
+ */
+export function setArticleContent(id, content) {
+  return updateArticleContent.run({ id, content: content || null }).changes;
+}
+
+export function countArticlesMissingContent() {
+  return countMissingContent.get().c;
+}
+
+/** One article with every column, including the extracted full text. */
+export function getArticleById(id) {
+  return selectArticleById.get({ id }) || null;
+}
 
 export function saveArticles(rows) {
   let inserted = 0;
@@ -96,7 +185,9 @@ export function getArticles({ category, source, page = 1, pageSize = 25 }) {
   const limit = Math.min(Math.max(parseInt(pageSize, 10) || 25, 1), 100);
   const offset = (pageNum - 1) * limit;
   const rows = db.prepare(`
-    SELECT * FROM articles ${whereSql}
+    SELECT id, source_id, publisher, url, url_hash, title, author, summary, image_url, category,
+           published_at, first_seen_at, updated_at, (content IS NOT NULL) AS has_content
+    FROM articles ${whereSql}
     ORDER BY COALESCE(published_at, first_seen_at) DESC
     LIMIT @limit OFFSET @offset
   `).all({ ...params, limit, offset });

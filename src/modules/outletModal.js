@@ -3,6 +3,12 @@
 
 import { SOURCES } from '../data/sourcesData.js';
 import { getLiveStories } from './liveFeed.js';
+import {
+  ratingFor,
+  renderBiasMeter,
+  renderFactualityBadge,
+  RATING_METHODOLOGY
+} from './ratingSystem.js';
 
 // Supplementary reference ratings for outlet dossiers.
 // Ad Fontes Media "Media Bias Chart" scores, Media Bias/Fact Check factuality
@@ -53,22 +59,6 @@ const OUTLET_EXTENDED = {
   }
 };
 
-const BIAS_LABELS = {
-  '-2': { text: 'Left', color: '#2563eb', pct: 10 },
-  '-1': { text: 'Lean Left', color: '#60a5fa', pct: 30 },
-  '0':  { text: 'Center', color: '#64748b', pct: 50 },
-  '1':  { text: 'Lean Right', color: '#f97316', pct: 70 },
-  '2':  { text: 'Right', color: '#dc2626', pct: 90 },
-};
-
-const FACTUALITY_CONFIG = {
-  'Very High': { pct: 95, color: '#10b981' },
-  'High':      { pct: 78, color: '#34d399' },
-  'Mixed':     { pct: 50, color: '#eab308' },
-  'Low':       { pct: 20, color: '#f87171' },
-  'Very Low':  { pct: 5,  color: '#dc2626' },
-};
-
 export function openOutletDossier(outletId) {
   const source = SOURCES.find(s => s.id === outletId);
   if (!source) return;
@@ -76,20 +66,16 @@ export function openOutletDossier(outletId) {
   renderOutletModal(source, ext);
 }
 
-function renderOutletModal(source, ext) {
-  closeOutletDossier();
-
-  const biasKey = String(source.biasScore ?? 0);
-  const biasConf = BIAS_LABELS[biasKey] || BIAS_LABELS['0'];
-  const factConf = FACTUALITY_CONFIG[source.factuality] || FACTUALITY_CONFIG['Mixed'];
+/**
+ * Dossier markup — pure, so the rating presentation can be asserted in tests
+ * without touching the DOM.
+ */
+export function renderOutletDossierHtml(source, ext = {}, headlines = []) {
+  const rating = ratingFor(source);
+  const factLevel = rating.level;
+  const factPct = factLevel ? Math.round((factLevel.score / 3) * 100) : 0;
+  const biasColor = rating.stop ? rating.stop.color : '#9aa0a6';
   const adFontes = ext.adFontes ?? '—';
-  // Headlines come from the live wire, matched on the outlet id assigned by the
-  // bias database. When the outlet published nothing in the current window we say
-  // so rather than showing stand-in copy.
-  const headlines = getLiveStories()
-    .filter(item => item.rating?.outletId === source.id)
-    .slice(0, 5)
-    .map(item => item.title);
 
   const ownershipTypeColors = {
     'Corporate Conglomerate': '#eab308',
@@ -102,10 +88,7 @@ function renderOutletModal(source, ext) {
   };
   const ownerColor = ownershipTypeColors[source.ownershipType] || '#64748b';
 
-  const overlay = document.createElement('div');
-  overlay.id = 'outlet-dossier-overlay';
-  overlay.className = 'outlet-dossier-overlay';
-  overlay.innerHTML = `
+  return `
     <div class="outlet-dossier-modal" role="dialog" aria-modal="true">
       
       <!-- Header -->
@@ -144,35 +127,29 @@ function renderOutletModal(source, ext) {
         <div class="od-metric-card">
           <div class="od-metric-header">
             <span class="od-metric-label">Media Bias</span>
-            <span class="od-metric-badge" style="background:${biasConf.color}20;color:${biasConf.color};border-color:${biasConf.color}40">
-              ${biasConf.text}
+            <span class="od-metric-badge" style="background:${biasColor}20;color:${biasColor};border-color:${biasColor}40">
+              ${rating.biasLabel || 'Unrated'}
             </span>
           </div>
-          <div class="od-bias-spectrum">
-            <span class="od-spec-end left">Left</span>
-            <div class="od-spec-track">
-              <div class="od-spec-marker" style="left:${biasConf.pct}%;background:${biasConf.color}"></div>
-            </div>
-            <span class="od-spec-end right">Right</span>
-          </div>
-          <p class="od-metric-note">Source: AllSides Media Bias Rating${ext.allsidesScore ? ' — ' + ext.allsidesScore : ''}</p>
+          ${renderBiasMeter(rating.biasScore, { className: 'od-rating-meter' })}
+          <p class="od-metric-note">Five-stop scale from Left to Right${ext.allsidesScore ? ` — AllSides: ${ext.allsidesScore}` : ''}</p>
         </div>
 
         <!-- Factuality -->
         <div class="od-metric-card">
           <div class="od-metric-header">
             <span class="od-metric-label">Factuality</span>
-            <span class="od-metric-badge" style="background:${factConf.color}20;color:${factConf.color};border-color:${factConf.color}40">
-              ${source.factuality}
-            </span>
+            ${renderFactualityBadge(rating.factuality)}
           </div>
           <div class="od-fact-bar-track">
-            <div class="od-fact-bar-fill" style="width:${factConf.pct}%;background:${factConf.color}"></div>
+            <div class="od-fact-bar-fill" style="width:${factPct}%;background:${factLevel ? factLevel.color : '#9aa0a6'}"></div>
           </div>
           <p class="od-metric-note">Ad Fontes Score: <strong>${adFontes}</strong>${ext.mbfc ? ' · MBFC: ' + ext.mbfc : ''}</p>
         </div>
 
       </div>
+
+      <p class="od-methodology">${RATING_METHODOLOGY.sources} ${RATING_METHODOLOGY.unrated}</p>
 
       <!-- Ownership -->
       <div class="od-section">
@@ -212,6 +189,23 @@ function renderOutletModal(source, ext) {
 
     </div>
   `;
+}
+
+function renderOutletModal(source, ext) {
+  closeOutletDossier();
+
+  // Headlines come from the live wire, matched on the outlet id assigned by the
+  // bias database. When the outlet published nothing in the current window we say
+  // so rather than showing stand-in copy.
+  const headlines = getLiveStories()
+    .filter(item => item.rating?.outletId === source.id)
+    .slice(0, 5)
+    .map(item => item.title);
+
+  const overlay = document.createElement('div');
+  overlay.id = 'outlet-dossier-overlay';
+  overlay.className = 'outlet-dossier-overlay';
+  overlay.innerHTML = renderOutletDossierHtml(source, ext, headlines);
 
   overlay.addEventListener('click', e => {
     if (e.target === overlay) closeOutletDossier();

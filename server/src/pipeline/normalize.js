@@ -104,3 +104,38 @@ export function toNewsApiArticleRow(source, article) {
     publishedAt: toIsoDate(article.publishedAt),
   };
 }
+
+/**
+ * GDELT timestamps are `YYYYMMDDTHHMMSSZ` (e.g. 20260925T094500Z), which
+ * `new Date()` cannot parse — convert the components explicitly.
+ */
+export function parseGdeltDate(value) {
+  const match = String(value || '').match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/);
+  if (!match) return null;
+  const [, year, month, day, hour, minute, second] = match;
+  const date = new Date(Date.UTC(+year, +month - 1, +day, +hour, +minute, +second));
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+/** Map a GDELT DOC 2.0 article + source config to a DB-ready row. */
+export function toGdeltArticleRow(source, article) {
+  const url = normalizeUrl(article.url || '');
+  const title = stripHtml(article.title || '');
+  if (!url || !title) return null;
+  return {
+    sourceId: source.id,
+    // GDELT reports the publishing domain (e.g. "cnn.com"), which is exactly the
+    // key the frontend outlet matcher normalises against.
+    publisher: article.domain || source.name || null,
+    url,
+    urlHash: sha1(url),
+    title,
+    titleHash: sha1(normalizeTitle(title)),
+    author: null,
+    // The DOC artlist API carries no description or snippet of any kind.
+    summary: null,
+    imageUrl: article.socialimage || null,
+    category: source.category || null,
+    publishedAt: parseGdeltDate(article.seendate)
+  };
+}
